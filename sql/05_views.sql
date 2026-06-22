@@ -19,6 +19,13 @@ SELECT 6, 'Verified', COUNT(*) FROM asset_reconciliation WHERE reconciliation_st
 CREATE OR REPLACE VIEW renewal_pipeline AS
 SELECT
     c.*,
+    p.industry,
+    p.customer_business_model,
+    p.sales_theater,
+    p.sales_group,
+    p.sales_manager,
+    p.ae_name,
+    p.route_to_market,
     p.priority_score,
     p.priority_band,
     p.recommended_play,

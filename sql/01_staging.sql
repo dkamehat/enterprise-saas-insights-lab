@@ -3,9 +3,14 @@ SELECT
     CAST(account_id AS VARCHAR) AS account_id,
     CAST(account_name AS VARCHAR) AS account_name,
     CAST(industry AS VARCHAR) AS industry,
+    CAST(customer_business_model AS VARCHAR) AS customer_business_model,
     CAST(segment AS VARCHAR) AS segment,
+    CAST(sales_theater AS VARCHAR) AS sales_theater,
     CAST(region AS VARCHAR) AS region,
+    CAST(sales_group AS VARCHAR) AS sales_group,
+    CAST(sales_manager AS VARCHAR) AS sales_manager,
     CAST(ae_name AS VARCHAR) AS ae_name,
+    CAST(route_to_market AS VARCHAR) AS route_to_market,
     CAST(partner_name AS VARCHAR) AS partner_name,
     CAST(strategic_tier AS VARCHAR) AS strategic_tier,
     CAST(annual_revenue_jpy_mn AS DOUBLE) AS annual_revenue_jpy_mn,
@@ -17,7 +22,8 @@ SELECT
     CAST(gpu_cluster_planned AS BOOLEAN) AS gpu_cluster_planned,
     CAST(budget_readiness_pct AS DOUBLE) AS budget_readiness_pct,
     CAST(managed_service_interest AS DOUBLE) AS managed_service_interest,
-    CAST(budget_cycle_month AS BIGINT) AS budget_cycle_month
+    CAST(budget_cycle_month AS BIGINT) AS budget_cycle_month,
+    CAST(global_account_flag AS BOOLEAN) AS global_account_flag
 FROM raw_accounts;
 
 CREATE OR REPLACE TABLE stg_contracts AS
@@ -26,6 +32,7 @@ SELECT
     CAST(account_id AS VARCHAR) AS account_id,
     CAST(vendor AS VARCHAR) AS vendor,
     CAST(product_family AS VARCHAR) AS product_family,
+    CAST(portfolio_domain AS VARCHAR) AS portfolio_domain,
     CAST(contract_type AS VARCHAR) AS contract_type,
     TRY_CAST(start_date AS DATE) AS start_date,
     TRY_CAST(end_date AS DATE) AS end_date,
@@ -47,6 +54,9 @@ SELECT
     NULLIF(UPPER(TRIM(CAST(serial_number AS VARCHAR))), '') AS serial_number,
     CAST(vendor AS VARCHAR) AS vendor,
     CAST(product_family AS VARCHAR) AS product_family,
+    CAST(portfolio_domain AS VARCHAR) AS portfolio_domain,
+    CAST(deployment_model AS VARCHAR) AS deployment_model,
+    CAST(commercial_model AS VARCHAR) AS commercial_model,
     CAST(product_line AS VARCHAR) AS product_line,
     CAST(model AS VARCHAR) AS model,
     TRY_CAST(install_date AS DATE) AS install_date,

@@ -63,8 +63,12 @@ def export_outputs(paths: Paths | None = None) -> list[Path]:
     outputs: list[Path] = []
     queries = {
         "account_playbook.csv": """
-            SELECT account_id, account_name, segment, region, strategic_tier,
+            SELECT account_id, account_name, industry, customer_business_model,
+                   segment, sales_theater, region, sales_group, sales_manager,
+                   ae_name, route_to_market, strategic_tier, global_account_flag,
                    priority_score, priority_band, recommended_play, primary_competitor,
+                   portfolio_domain_count, deployment_model_count,
+                   physical_or_hybrid_pct, software_subscription_pct,
                    estimated_tcv_jpy_mn, expected_commercial_value_jpy_mn,
                    data_confidence_pct, governance_status, positioning_angle,
                    next_best_action, data_story

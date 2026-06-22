@@ -65,6 +65,39 @@ st.dataframe(
     hide_index=True,
 )
 
+st.subheader("Role Requirement Mapping")
+st.markdown(
+    "- **Large dataset operations**: account, contract, entitlement, usage, and "
+    "competitive signals are combined into account-level governance views.\n"
+    "- **Complex data logic**: weighted scoring, bounded confidence, renewal risk, "
+    "and source reconciliation stay explainable in SQL and TOML.\n"
+    "- **Stakeholder storytelling**: executive, sales, data quality, and governance "
+    "pages reuse the same facts at different decision depths."
+)
+st.caption("大規模データ、複雑な構造監査、社内向けデータストーリーテリングの説明材料です。")
+st.dataframe(
+    {
+        "Requirement lens": [
+            "Large dataset operations",
+            "Complex data logic",
+            "Data structure audit",
+            "Stakeholder storytelling",
+            "Salesforce / BI tool readiness",
+            "Agility and resilience",
+        ],
+        "How this lab demonstrates it": [
+            "25,000 subscription assetsをAccount、契約、権利、利用、競合Signalへ結合",
+            "TOML重み、SQL特徴量、bounded score、TCO式を分離して管理",
+            "Serial、Contract、Entitlement、Account alignment、Source systemを監査",
+            "Executive、AE、Data Quality、Governanceごとに同じ事実を別視点で説明",
+            "CRM由来のOpportunity、Commerce Portal、Partner FeedをBI martへ変換",
+            "ルールベースをChampionにして、後からML/AI challengerを差し替え可能",
+        ],
+    },
+    use_container_width=True,
+    hide_index=True,
+)
+
 st.subheader("Score audit sample")
 st.caption("各Accountの推奨PlayとDriverを追跡し、後から説明できる状態にします。")
 audit = read_df(

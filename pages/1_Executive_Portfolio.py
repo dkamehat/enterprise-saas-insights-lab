@@ -28,18 +28,34 @@ st.info(
 )
 
 f1, f2, f3, f4 = st.columns(4)
-segment = f1.multiselect("Segment", sorted(portfolio["segment"].unique()), default=[])
-region = f2.multiselect("Region", sorted(portfolio["region"].unique()), default=[])
-tier = f3.multiselect("Strategic tier", sorted(portfolio["strategic_tier"].unique()), default=[])
-priority = f4.multiselect("Priority", ["High", "Medium", "Low"], default=["High", "Medium"])
+industry = f1.multiselect("Industry", sorted(portfolio["industry"].unique()), default=[])
+business_model = f2.multiselect(
+    "Business model", sorted(portfolio["customer_business_model"].unique()), default=[]
+)
+theater = f3.multiselect("Theater", sorted(portfolio["sales_theater"].unique()), default=[])
+sales_group = f4.multiselect("Sales group", sorted(portfolio["sales_group"].unique()), default=[])
+
+g1, g2, g3, g4 = st.columns(4)
+segment = g1.multiselect("Segment", sorted(portfolio["segment"].unique()), default=[])
+region = g2.multiselect("Region", sorted(portfolio["region"].unique()), default=[])
+ae = g3.multiselect("AE / member", sorted(portfolio["ae_name"].unique()), default=[])
+priority = g4.multiselect("Priority", ["High", "Medium", "Low"], default=["High", "Medium"])
 
 filtered = portfolio.copy()
+if industry:
+    filtered = filtered[filtered["industry"].isin(industry)]
+if business_model:
+    filtered = filtered[filtered["customer_business_model"].isin(business_model)]
+if theater:
+    filtered = filtered[filtered["sales_theater"].isin(theater)]
+if sales_group:
+    filtered = filtered[filtered["sales_group"].isin(sales_group)]
 if segment:
     filtered = filtered[filtered["segment"].isin(segment)]
 if region:
     filtered = filtered[filtered["region"].isin(region)]
-if tier:
-    filtered = filtered[filtered["strategic_tier"].isin(tier)]
+if ae:
+    filtered = filtered[filtered["ae_name"].isin(ae)]
 if priority:
     filtered = filtered[filtered["priority_band"].isin(priority)]
 
@@ -91,15 +107,75 @@ with right:
         use_container_width=True,
     )
 
+st.subheader("Global Portfolio And Sales Coverage")
+st.markdown(
+    "Use this view to compare industry, business model, sales theater, sales group, "
+    "and owner coverage while keeping physical/hybrid portfolio mix and software "
+    "subscription mix visible for renewal and expansion planning."
+)
+st.caption(
+    "グローバル地域、営業グループ、業種・業態で見たときに、どこへ支援と監査を寄せるべきかを見ます。"
+)
+coverage_left, coverage_right = st.columns(2)
+with coverage_left:
+    by_group = (
+        filtered.groupby(["sales_theater", "sales_group", "governance_status"], as_index=False)
+        .agg(
+            accounts=("account_id", "count"),
+            expected_value=("expected_commercial_value_jpy_mn", "sum"),
+        )
+        .sort_values("expected_value", ascending=False)
+    )
+    st.plotly_chart(
+        px.bar(
+            by_group,
+            x="sales_group",
+            y="expected_value",
+            color="governance_status",
+            facet_col="sales_theater",
+            labels={"expected_value": "Expected value (JPY mn)", "sales_group": "Sales group"},
+        ),
+        use_container_width=True,
+    )
+with coverage_right:
+    industry_model = (
+        filtered.groupby(["industry", "customer_business_model"], as_index=False)
+        .agg(
+            accounts=("account_id", "count"),
+            avg_priority=("priority_score", "mean"),
+            expected_value=("expected_commercial_value_jpy_mn", "sum"),
+        )
+        .sort_values("expected_value", ascending=False)
+    )
+    st.dataframe(
+        industry_model.head(30),
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "avg_priority": st.column_config.NumberColumn("Avg priority", format="%.1f"),
+            "expected_value": st.column_config.NumberColumn(
+                "Expected value (JPY mn)", format="%.1f"
+            ),
+        },
+    )
+
 st.subheader("Top Account Playbook")
 st.caption("AEが次に見るべきAccountと、会話の入口になるNext Best Actionです。")
 columns = [
     "account_name",
+    "industry",
+    "customer_business_model",
     "segment",
+    "sales_theater",
+    "sales_group",
+    "ae_name",
     "strategic_tier",
     "priority_score",
     "recommended_play",
     "primary_competitor",
+    "portfolio_domain_count",
+    "physical_or_hybrid_pct",
+    "software_subscription_pct",
     "expected_commercial_value_jpy_mn",
     "data_confidence_pct",
     "governance_status",

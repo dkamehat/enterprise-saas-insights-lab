@@ -72,6 +72,41 @@ st.subheader("Issue backlog")
 st.caption("最初に潰すべきデータ品質課題を件数順に確認します。")
 st.dataframe(issues, use_container_width=True, hide_index=True)
 
+st.subheader("Quality By Source And Portfolio")
+st.caption("複数システムから来る大規模データを、Source systemとPortfolio domainで監査します。")
+q1, q2 = st.columns(2)
+with q1:
+    source_quality = read_df(
+        """
+        SELECT source_system, reconciliation_status, COUNT(*) AS assets,
+               AVG(asset_data_confidence_pct) AS avg_confidence
+        FROM asset_reconciliation
+        GROUP BY source_system, reconciliation_status
+        ORDER BY source_system, assets DESC
+        """
+    )
+    st.plotly_chart(
+        px.bar(
+            source_quality,
+            x="source_system",
+            y="assets",
+            color="reconciliation_status",
+            barmode="stack",
+        ),
+        use_container_width=True,
+    )
+with q2:
+    portfolio_quality = read_df(
+        """
+        SELECT portfolio_domain, deployment_model, COUNT(*) AS assets,
+               AVG(asset_data_confidence_pct) AS avg_confidence
+        FROM asset_reconciliation
+        GROUP BY portfolio_domain, deployment_model
+        ORDER BY avg_confidence, assets DESC
+        """
+    )
+    st.dataframe(portfolio_quality, use_container_width=True, hide_index=True)
+
 st.subheader("Accounts requiring evidence before forecast")
 st.caption("商業価値があっても、証拠が足りないAccountはUpside/Riskとして分けます。")
 accounts = read_df(
@@ -85,6 +120,21 @@ accounts = read_df(
     """
 )
 st.dataframe(accounts, use_container_width=True, hide_index=True)
+
+st.subheader("Evidence Backlog By Sales Group")
+st.caption("営業組織ごとに、Forecast前の照合負荷と金額影響を確認します。")
+sales_backlog = read_df(
+    """
+    SELECT sales_theater, sales_group, COUNT(*) AS accounts,
+           SUM(expected_commercial_value_jpy_mn) AS expected_value_jpy_mn,
+           AVG(data_confidence_pct) AS avg_data_confidence
+    FROM account_positioning
+    WHERE governance_status = 'Evidence required'
+    GROUP BY sales_theater, sales_group
+    ORDER BY expected_value_jpy_mn DESC
+    """
+)
+st.dataframe(sales_backlog, use_container_width=True, hide_index=True)
 
 with st.expander("Unknown asset sample"):
     unknown = read_df(

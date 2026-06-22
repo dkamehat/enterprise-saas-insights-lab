@@ -3,6 +3,8 @@ WITH asset_agg AS (
     SELECT
         account_id,
         COUNT(*) AS total_assets,
+        COUNT(DISTINCT portfolio_domain) AS portfolio_domain_count,
+        COUNT(DISTINCT deployment_model) AS deployment_model_count,
         COUNT(*) FILTER (WHERE vendor = 'Primary SaaS Vendor') AS primary_assets,
         COUNT(*) FILTER (
             WHERE vendor = 'Primary SaaS Vendor'
@@ -30,6 +32,13 @@ WITH asset_agg AS (
         100.0 * COUNT(*) FILTER (
             WHERE product_family = 'Data Platform' AND capacity_units < 400
         ) / NULLIF(COUNT(*) FILTER (WHERE product_family = 'Data Platform'), 0) AS data_throughput_gap_pct,
+        100.0 * COUNT(*) FILTER (
+            WHERE deployment_model IN ('Hybrid edge', 'Hybrid data plane')
+               OR commercial_model = 'SaaS + device'
+        ) / NULLIF(COUNT(*), 0) AS physical_or_hybrid_pct,
+        100.0 * COUNT(*) FILTER (
+            WHERE commercial_model = 'SaaS subscription'
+        ) / NULLIF(COUNT(*), 0) AS software_subscription_pct,
         100.0 * AVG(
             CASE
                 WHEN product_family IN ('Core Platform', 'Data Platform')
@@ -104,6 +113,8 @@ WITH asset_agg AS (
 SELECT
     a.*,
     COALESCE(x.total_assets, 0) AS total_assets,
+    COALESCE(x.portfolio_domain_count, 0) AS portfolio_domain_count,
+    COALESCE(x.deployment_model_count, 0) AS deployment_model_count,
     COALESCE(x.primary_assets, 0) AS primary_assets,
     COALESCE(x.modernization_asset_count, 0) AS modernization_asset_count,
     COALESCE(x.primary_share_pct, 0) AS primary_share_pct,
@@ -112,6 +123,8 @@ SELECT
     COALESCE(x.eol_18m_pct, 0) AS eol_18m_pct,
     COALESCE(x.support_gap_pct, 0) AS support_gap_pct,
     COALESCE(x.data_throughput_gap_pct, 0) AS data_throughput_gap_pct,
+    COALESCE(x.physical_or_hybrid_pct, 0) AS physical_or_hybrid_pct,
+    COALESCE(x.software_subscription_pct, 0) AS software_subscription_pct,
     COALESCE(x.platform_utilization_pressure_pct, 0) AS platform_utilization_pressure_pct,
     COALESCE(x.data_confidence_pct, 0) AS data_confidence_pct,
     COALESCE(x.verified_assets_pct, 0) AS verified_assets_pct,

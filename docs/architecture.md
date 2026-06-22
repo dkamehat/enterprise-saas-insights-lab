@@ -8,6 +8,7 @@
 Synthetic source tables
     accounts / assets / contracts / entitlements
     support cases / opportunities / competitor signals
+    sales coverage / business model / portfolio domain
                          |
                          v
 DuckDB raw + staging tables
@@ -19,6 +20,7 @@ Asset reconciliation
                          v
 Account feature mart
     subscription inventory / lifecycle / renewal / adoption / incident / competition
+    sales theater / sales group / industry / business model / portfolio complexity
                          |
                          v
 Explainable sales-play scoring

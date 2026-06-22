@@ -11,6 +11,8 @@
 - Verified / Reconcilable / Unknownへの分類
 - Platform Modernization、Security Platform、AI Data Platform、Renewal / Enterprise Planの機会スコアリング
 - Account別の競合ポジショニングとNext Best Action生成
+- 業種、業態、グローバル地域、営業グループ、担当者別のPortfolio分析
+- 物理/ハイブリッド/ソフトウェアSubscriptionが混在するAccount複雑度の可視化
 - Baseとなるデータ信頼度を用いたForecast governance
 - 主力SaaS継続対競合移行の調整可能な3年TCOシナリオ
 - StreamlitによるPortfolio、Account 360、競合、品質、ガバナンス画面
@@ -67,6 +69,7 @@ add regression tests, and summarize the resulting decision logic.
 ### 1. Executive Portfolio
 
 Priorityが高いAccountを、Expected ValueとData Confidenceを含めて絞り込みます。
+業種、業態、Theater、Sales group、AE/memberでも切り替えられます。
 
 ### 2. Account 360
 
@@ -143,6 +146,7 @@ CODEX_TASKS.md        Follow-on implementation tasks
 このデモはローカル・単一ユーザー向けです。本番投入には以下が必要です。
 
 - CRM / Commerce Portal / Subscription inventory等への承認済みAdapter
+- Salesforce / Sigma / Snowflake等での同一Mart再現
 - IAM、RBAC、Row-level security
 - PII・機密情報の分類とマスキング
 - Data contract、Lineage、Incremental load、監視

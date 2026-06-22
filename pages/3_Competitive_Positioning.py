@@ -25,9 +25,20 @@ st.info(
     "右上に近いAccountは、提案Fitが高い一方で競合圧力も強い領域です。"
     "早めに価値仮説と証拠を揃え、価格比較だけに持ち込まれないようにします。"
 )
-play = st.selectbox("Sales Play", ["All"] + sorted(frame["recommended_play"].unique().tolist()))
-competitor = st.selectbox(
+f1, f2, f3, f4 = st.columns(4)
+play = f1.selectbox("Sales Play", ["All"] + sorted(frame["recommended_play"].unique().tolist()))
+competitor = f2.selectbox(
     "Competitor", ["All"] + sorted(frame["primary_competitor"].unique().tolist())
+)
+theater = f3.selectbox("Theater", ["All"] + sorted(frame["sales_theater"].unique().tolist()))
+sales_group = f4.selectbox(
+    "Sales group", ["All"] + sorted(frame["sales_group"].unique().tolist())
+)
+
+g1, g2 = st.columns(2)
+industry = g1.selectbox("Industry", ["All"] + sorted(frame["industry"].unique().tolist()))
+business_model = g2.selectbox(
+    "Business model", ["All"] + sorted(frame["customer_business_model"].unique().tolist())
 )
 
 filtered = frame.copy()
@@ -35,6 +46,14 @@ if play != "All":
     filtered = filtered[filtered["recommended_play"] == play]
 if competitor != "All":
     filtered = filtered[filtered["primary_competitor"] == competitor]
+if theater != "All":
+    filtered = filtered[filtered["sales_theater"] == theater]
+if sales_group != "All":
+    filtered = filtered[filtered["sales_group"] == sales_group]
+if industry != "All":
+    filtered = filtered[filtered["industry"] == industry]
+if business_model != "All":
+    filtered = filtered[filtered["customer_business_model"] == business_model]
 
 st.subheader("Positioning matrix")
 fig = px.scatter(
@@ -44,7 +63,14 @@ fig = px.scatter(
     size="expected_commercial_value_jpy_mn",
     color="recommended_play",
     hover_name="account_name",
-    hover_data=["primary_competitor", "priority_score", "data_confidence_pct", "governance_status"],
+    hover_data=[
+        "industry",
+        "sales_group",
+        "primary_competitor",
+        "priority_score",
+        "data_confidence_pct",
+        "governance_status",
+    ],
     labels={
         "play_fit_score": "Primary vendor sales-play fit",
         "competitive_pressure_pct": "Competitive pressure",
@@ -64,6 +90,9 @@ st.subheader("Account-level positioning")
 st.caption("各Accountで、競合比較の論点と次アクションを確認します。")
 columns = [
     "account_name",
+    "industry",
+    "sales_theater",
+    "sales_group",
     "recommended_play",
     "primary_competitor",
     "play_fit_score",

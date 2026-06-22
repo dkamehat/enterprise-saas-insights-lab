@@ -4,11 +4,13 @@
 
 ### accounts
 
-Account属性、AE、Partner、Segment、AI投資時期、Security tool数などの営業コンテキスト。
+Account属性、Industry、Business model、Sales theater、Sales group、AE、Partner、
+Segment、AI投資時期、Security tool数などの営業コンテキスト。
 
 ### assets
 
-Subscription inventoryの最小粒度。Asset ID、Serial、Account、Site、Vendor、Product family、Lifecycle、Contract / Entitlement参照を持つ。
+Subscription inventoryの最小粒度。Asset ID、Serial、Account、Site、Vendor、Product family、
+Portfolio domain、Deployment model、Commercial model、Lifecycle、Contract / Entitlement参照を持つ。
 
 ### contracts
 
@@ -48,6 +50,8 @@ Account単位の特徴量：
 
 - Subscription inventory / primary vendor share
 - Lifecycle transition / support gap / data throughput
+- Portfolio domain count / deployment model count
+- Physical or hybrid mix / software subscription mix
 - Renewal value / fragmentation / adoption
 - Incident pressure
 - Competitor pressure

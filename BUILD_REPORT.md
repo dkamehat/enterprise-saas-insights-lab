@@ -12,22 +12,30 @@
 - Accounts: 250
 - Assets: 25,000
 - Scored accounts: 250
-- Verified assets: 7,856
-- Forecast-ready accounts: 207
-- Evidence-required accounts: 43
+- Verified assets: 8,045
+- Forecast-ready accounts: 214
+- Evidence-required accounts: 36
 
 ## Sales-play distribution
 
-- AI Data Platform: 104
-- Renewal / Enterprise Plan: 63
-- Security Platform: 52
-- Platform Modernization: 31
+- AI Data Platform: 113
+- Renewal / Enterprise Plan: 65
+- Platform Modernization: 39
+- Security Platform: 33
 
 ## Priority distribution
 
 - High: 69
-- Medium: 155
-- Low: 26
+- Medium: 160
+- Low: 21
+
+## Added analytical dimensions
+
+- Industry and customer business model
+- Sales theater, region, sales group, sales manager, and AE/member
+- Route to market and global-account flag
+- Portfolio domain, deployment model, commercial model
+- Physical/hybrid mix and software-subscription mix
 
 ## Commands executed
 

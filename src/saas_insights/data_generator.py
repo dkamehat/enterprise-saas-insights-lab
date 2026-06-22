@@ -131,6 +131,30 @@ PLAY_COMPETITORS = {
     ],
 }
 
+PRODUCT_PORTFOLIO = {
+    "Core Platform": ("Infrastructure", "Hybrid edge", "Hybrid bundle"),
+    "Data Platform": ("Data & AI", "Hybrid data plane", "Hybrid bundle"),
+    "Security Suite": ("Security", "Cloud security", "SaaS subscription"),
+    "Observability": ("Observability", "Cloud analytics", "SaaS subscription"),
+    "Collaboration": ("Collaboration", "Cloud collaboration", "SaaS + device"),
+}
+
+SALES_GROUPS = {
+    "Enterprise": [
+        ("Enterprise North", "Mgr-Enterprise-01"),
+        ("Enterprise West", "Mgr-Enterprise-02"),
+        ("Global Strategic Accounts", "Mgr-Global-01"),
+    ],
+    "Commercial": [
+        ("Commercial Growth East", "Mgr-Commercial-01"),
+        ("Commercial Growth West", "Mgr-Commercial-02"),
+    ],
+    "Public Sector": [
+        ("Public Sector Central", "Mgr-Public-01"),
+        ("Education and Healthcare", "Mgr-Public-02"),
+    ],
+}
+
 
 def _choice(
     rng: np.random.Generator, values: list[Any], probabilities: list[float] | None = None
@@ -191,16 +215,52 @@ def generate_dataset(
         "Logistics",
         "Telecommunications",
     ]
+    business_models = [
+        "B2B Enterprise",
+        "B2C Digital",
+        "Regulated Services",
+        "Public Mission",
+        "Industrial Operations",
+        "Platform / Marketplace",
+    ]
     prefixes = ["Kanto", "Kansai", "Chubu", "Hokkaido", "Kyushu", "Setouchi", "Tohoku"]
     suffixes = ["Industries", "Systems", "Holdings", "Services", "Group", "Network", "Solutions"]
     segments = ["Enterprise", "Commercial", "Public Sector"]
-    regions = ["Japan East", "Japan West", "Japan Central"]
+    regions = [
+        "APJC Japan East",
+        "APJC Japan West",
+        "APJC ASEAN",
+        "Americas West",
+        "Americas East",
+        "EMEA North",
+        "EMEA South",
+    ]
+    theaters = {
+        "APJC Japan East": "APJC",
+        "APJC Japan West": "APJC",
+        "APJC ASEAN": "APJC",
+        "Americas West": "Americas",
+        "Americas East": "Americas",
+        "EMEA North": "EMEA",
+        "EMEA South": "EMEA",
+    }
     tiers = ["Tier 1", "Tier 2", "Tier 3"]
 
     accounts: list[dict[str, Any]] = []
     for i in range(account_count):
         segment = str(rng.choice(segments, p=[0.50, 0.34, 0.16]))
         tier = str(rng.choice(tiers, p=[0.22, 0.43, 0.35]))
+        region = str(rng.choice(regions, p=[0.32, 0.24, 0.12, 0.10, 0.08, 0.08, 0.06]))
+        sales_group, sales_manager = SALES_GROUPS[segment][
+            int(rng.integers(0, len(SALES_GROUPS[segment])))
+        ]
+        sales_member = f"{sales_group.split()[0]}-{int(rng.integers(1, 16)):02d}"
+        route_to_market = str(
+            rng.choice(
+                ["Direct", "Partner-led", "Distributor", "Cloud Marketplace"],
+                p=[0.38, 0.36, 0.16, 0.10],
+            )
+        )
         enterprise_factor = 1.8 if segment == "Enterprise" else 1.0
         tier_factor = {"Tier 1": 1.8, "Tier 2": 1.25, "Tier 3": 0.8}[tier]
         revenue = float(
@@ -216,9 +276,14 @@ def generate_dataset(
                 "account_id": f"A{i + 1:05d}",
                 "account_name": f"{rng.choice(prefixes)} {rng.choice(suffixes)} {i + 1:03d}",
                 "industry": str(rng.choice(industries)),
+                "customer_business_model": str(rng.choice(business_models)),
                 "segment": segment,
-                "region": str(rng.choice(regions, p=[0.46, 0.34, 0.20])),
-                "ae_name": f"AE-{int(rng.integers(1, 31)):02d}",
+                "sales_theater": theaters[region],
+                "region": region,
+                "sales_group": sales_group,
+                "sales_manager": sales_manager,
+                "ae_name": sales_member,
+                "route_to_market": route_to_market,
                 "partner_name": str(
                     rng.choice(
                         [
@@ -243,6 +308,7 @@ def generate_dataset(
                 "budget_readiness_pct": round(float(rng.beta(2.4, 1.9) * 100), 1),
                 "managed_service_interest": round(float(rng.beta(2.0, 2.4) * 100), 1),
                 "budget_cycle_month": int(rng.integers(1, 13)),
+                "global_account_flag": bool(tier == "Tier 1" and rng.random() < 0.58),
             }
         )
     accounts_df = pd.DataFrame(accounts)
@@ -279,6 +345,7 @@ def generate_dataset(
                 "account_id": account["account_id"],
                 "vendor": vendor,
                 "product_family": family,
+                "portfolio_domain": PRODUCT_PORTFOLIO[family][0],
                 "contract_type": contract_type,
                 "start_date": start.date().isoformat(),
                 "end_date": end.date().isoformat(),
@@ -327,6 +394,7 @@ def generate_dataset(
             family = str(rng.choice(PRODUCT_FAMILIES, p=[0.37, 0.19, 0.20, 0.12, 0.12]))
             vendor = _vendor_for_family(rng, family, primary_affinity)
             model = _model_for(rng, family, vendor)
+            portfolio_domain, deployment_model, commercial_model = PRODUCT_PORTFOLIO[family]
             install_date = _random_date(rng, pd.Timestamp("2014-01-01"), AS_OF_DATE)
             lifetime_years = int(rng.integers(5, 10))
             eol_date = install_date + pd.Timedelta(days=lifetime_years * 365)
@@ -345,6 +413,9 @@ def generate_dataset(
                     "serial_number": f"SN{asset_counter:011d}",
                     "vendor": vendor,
                     "product_family": family,
+                    "portfolio_domain": portfolio_domain,
+                    "deployment_model": deployment_model,
+                    "commercial_model": commercial_model,
                     "product_line": model.split()[0],
                     "model": model,
                     "install_date": install_date.date().isoformat(),
