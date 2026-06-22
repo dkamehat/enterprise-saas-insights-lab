@@ -11,13 +11,13 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from cisco_insights.config import load_scoring_config  # noqa: E402
-from cisco_insights.tco import calculate_tco  # noqa: E402
-from cisco_insights.ui import database_ready, format_jpy_mn, read_df  # noqa: E402
+from saas_insights.config import load_scoring_config  # noqa: E402
+from saas_insights.tco import calculate_tco  # noqa: E402
+from saas_insights.ui import database_ready, format_jpy_mn, read_df  # noqa: E402
 
 st.set_page_config(page_title="Account 360", page_icon="🎯", layout="wide")
 st.title("Account 360")
-st.caption("資産・契約・競合・案件を一つのデータストーリーへ変換")
+st.caption("契約、利用率、競合、更新、データ品質を一つのAccountストーリーへ変換します。")
 
 if not database_ready():
     st.error("先にトップページでデモ環境を構築してください。")
@@ -33,6 +33,11 @@ account_id = labels[selected_label]
 
 row = read_df("SELECT * FROM account_positioning WHERE account_id = ?", [account_id]).iloc[0]
 
+st.info(
+    "この画面はAE/CSMが顧客会話の準備に使う想定です。"
+    "推奨Play、根拠となるDriver、未検証データ、競合ポジション、TCO仮説を一画面にまとめます。"
+)
+
 m1, m2, m3, m4, m5 = st.columns(5)
 m1.metric("Priority", f"{row['priority_score']:.1f}", row["priority_band"])
 m2.metric("Recommended play", row["recommended_play"])
@@ -46,9 +51,11 @@ st.success(row["data_story"])
 c1, c2 = st.columns(2)
 with c1:
     st.markdown("**Competitive positioning**")
+    st.caption("競合比較で何を論点にすべきかを短く示します。")
     st.write(row["positioning_angle"])
 with c2:
     st.markdown("**Next Best Action**")
+    st.caption("次回顧客接点までに実行すべき確認・提案準備です。")
     st.write(row["next_best_action"])
 
 with st.expander("スコア根拠・Forecast governance"):
@@ -61,6 +68,7 @@ with st.expander("スコア根拠・Forecast governance"):
 left, right = st.columns(2)
 with left:
     st.subheader("Asset reconciliation")
+    st.caption("Forecastの根拠に使えるSubscription inventoryかどうかを確認します。")
     reconciliation = read_df(
         """
         SELECT reconciliation_status, COUNT(*) AS assets,
@@ -78,11 +86,12 @@ with left:
     st.dataframe(reconciliation, use_container_width=True, hide_index=True)
 with right:
     st.subheader("Commercial profile")
+    st.caption("契約・利用・更新の状態を、提案余地とリスクの両面から見ます。")
     profile = {
         "Metric": [
             "Total assets",
-            "Cisco Network share",
-            "EOL / support transition within 18m",
+            "Primary SaaS Vendor Platform share",
+            "Lifecycle / support transition within 18m",
             "Support gap",
             "180d renewal value",
             "Contract fragmentation",
@@ -90,7 +99,7 @@ with right:
         ],
         "Value": [
             f"{int(row['total_assets']):,}",
-            f"{row['cisco_network_share_pct']:.1f}%",
+            f"{row['primary_platform_share_pct']:.1f}%",
             f"{row['eol_18m_pct']:.1f}%",
             f"{row['support_gap_pct']:.1f}%",
             format_jpy_mn(float(row["renewal_value_180d_jpy_mn"])),
@@ -101,16 +110,19 @@ with right:
     st.dataframe(profile, use_container_width=True, hide_index=True)
 
 st.subheader("3-year TCO scenario")
+st.caption("競合が安く見える場合でも、移行、教育、二重運用、障害期待損失まで含めて比較します。")
 t1, t2 = st.columns([1, 1])
-competitor_discount = t1.slider("Competitor product discount vs Cisco baseline", 0, 40, 18, 1)
+competitor_discount = t1.slider(
+    "Competitor product discount vs primary vendor baseline", 0, 40, 18, 1
+)
 years = t2.select_slider("Horizon", options=[1, 3, 5], value=3)
 tco = calculate_tco(
     row, load_scoring_config(), competitor_discount_pct=competitor_discount, years=years
 )
 st.dataframe(tco, use_container_width=True, hide_index=True)
-total_cisco = float(tco["cisco_jpy_mn"].sum())
+total_primary = float(tco["primary_jpy_mn"].sum())
 total_competitor = float(tco["competitor_jpy_mn"].sum())
-st.metric("Competitor minus Cisco TCO", format_jpy_mn(total_competitor - total_cisco))
+st.metric("Competitor minus primary-vendor TCO", format_jpy_mn(total_competitor - total_primary))
 st.caption(
     "係数はデモ用の仮定です。実案件では見積、移行WBS、運用工数、障害期待損失で差し替えます。"
 )

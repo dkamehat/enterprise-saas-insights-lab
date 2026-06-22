@@ -7,7 +7,7 @@ from .pipeline import bootstrap, build_warehouse, export_outputs, validate_wareh
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Cisco Sales Insights Lab")
+    parser = argparse.ArgumentParser(description="Enterprise SaaS Insights Lab")
     sub = parser.add_subparsers(dest="command", required=True)
 
     bootstrap_parser = sub.add_parser(

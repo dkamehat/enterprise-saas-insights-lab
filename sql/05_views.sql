@@ -27,7 +27,7 @@ SELECT
     DATE_DIFF('day', DATE '2026-06-21', c.end_date) AS days_to_renewal
 FROM stg_contracts c
 LEFT JOIN account_positioning p USING (account_id)
-WHERE c.vendor = 'Cisco'
+WHERE c.vendor = 'Primary SaaS Vendor'
   AND c.end_date >= DATE '2026-06-21';
 
 CREATE OR REPLACE VIEW portfolio_summary AS

@@ -18,10 +18,10 @@
 
 ## Sales-play distribution
 
-- AI Data Center: 104
-- Renewal / EA: 63
+- AI Data Platform: 104
+- Renewal / Enterprise Plan: 63
 - Security Platform: 52
-- Campus Refresh: 31
+- Platform Modernization: 31
 
 ## Priority distribution
 
@@ -34,9 +34,9 @@
 ```bash
 pytest
 ruff check .
-python -m cisco_insights.cli bootstrap --accounts 250 --assets 25000 --seed 42
-python -m cisco_insights.cli export
-python -m cisco_insights.cli validate
+python -m saas_insights.cli bootstrap --accounts 250 --assets 25000 --seed 42
+python -m saas_insights.cli export
+python -m saas_insights.cli validate
 streamlit run app.py --server.headless true
 ```
 

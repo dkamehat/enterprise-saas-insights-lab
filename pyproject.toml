@@ -3,9 +3,9 @@ requires = ["setuptools>=75", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cisco-sales-insights-lab"
+name = "enterprise-saas-insights-lab"
 version = "0.1.0"
-description = "Explainable sales-insights and competitive-positioning lab using synthetic Cisco-like commercial data."
+description = "Explainable sales-insights and competitive-positioning lab using synthetic enterprise SaaS commercial data."
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 dependencies = [
@@ -23,7 +23,7 @@ dev = [
 ]
 
 [project.scripts]
-cisco-insights = "cisco_insights.cli:main"
+saas-insights = "saas_insights.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

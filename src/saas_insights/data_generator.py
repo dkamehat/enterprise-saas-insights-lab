@@ -10,68 +10,125 @@ import pandas as pd
 AS_OF_DATE = pd.Timestamp("2026-06-21")
 
 PRODUCT_FAMILIES = [
-    "Campus Network",
-    "Data Center Network",
-    "Security",
+    "Core Platform",
+    "Data Platform",
+    "Security Suite",
     "Observability",
     "Collaboration",
 ]
 
 VENDOR_PROBABILITIES: dict[str, tuple[list[str], list[float]]] = {
-    "Campus Network": (
-        ["Cisco", "HPE Networking", "Arista", "Huawei", "Other"],
+    "Core Platform": (
+        ["Primary SaaS Vendor", "WorkSuite Cloud", "ServiceOps Cloud", "Regional Suite", "Other"],
         [0.67, 0.16, 0.07, 0.04, 0.06],
     ),
-    "Data Center Network": (
-        ["Cisco", "Arista", "NVIDIA", "HPE Networking", "White Box"],
+    "Data Platform": (
+        [
+            "Primary SaaS Vendor",
+            "DataOps Cloud",
+            "GPU Cloud Partner",
+            "WorkSuite Cloud",
+            "Open Platform",
+        ],
         [0.51, 0.24, 0.09, 0.09, 0.07],
     ),
-    "Security": (
-        ["Cisco", "Palo Alto Networks", "Fortinet", "Zscaler", "CrowdStrike", "Other"],
+    "Security Suite": (
+        [
+            "Primary SaaS Vendor",
+            "SecureEdge Cloud",
+            "ShieldOps Cloud",
+            "ZeroTrust Cloud",
+            "Endpoint Cloud",
+            "Other",
+        ],
         [0.27, 0.22, 0.20, 0.13, 0.10, 0.08],
     ),
     "Observability": (
-        ["Cisco", "Datadog", "Dynatrace", "New Relic", "Other"],
+        [
+            "Primary SaaS Vendor",
+            "Observability Cloud A",
+            "Observability Cloud B",
+            "Observability Cloud C",
+            "Other",
+        ],
         [0.34, 0.25, 0.18, 0.13, 0.10],
     ),
     "Collaboration": (
-        ["Cisco", "Microsoft", "Zoom", "RingCentral", "Other"],
+        ["Primary SaaS Vendor", "Productivity Cloud", "Meeting Cloud", "Voice Cloud", "Other"],
         [0.34, 0.37, 0.18, 0.06, 0.05],
     ),
 }
 
 MODELS: dict[tuple[str, str], list[str]] = {
-    ("Campus Network", "Cisco"): ["Catalyst 9300", "Catalyst 9500", "Meraki MS", "Catalyst AP"],
-    ("Campus Network", "HPE Networking"): ["Aruba CX", "Aruba Central AP"],
-    ("Campus Network", "Arista"): ["Arista 720XP", "Arista Campus"],
-    ("Data Center Network", "Cisco"): ["Nexus 9300", "Nexus 9500", "Cisco 8000"],
-    ("Data Center Network", "Arista"): ["Arista 7050X", "Arista 7800R"],
-    ("Data Center Network", "NVIDIA"): ["Spectrum-X", "Quantum InfiniBand"],
-    ("Security", "Cisco"): ["Secure Firewall", "Duo", "Umbrella", "Secure Access"],
-    ("Security", "Palo Alto Networks"): ["PA-Series", "Prisma Access", "Cortex"],
-    ("Security", "Fortinet"): ["FortiGate", "FortiSASE"],
-    ("Security", "Zscaler"): ["ZIA", "ZPA"],
-    ("Security", "CrowdStrike"): ["Falcon"],
-    ("Observability", "Cisco"): ["Splunk", "ThousandEyes", "AppDynamics"],
-    ("Observability", "Datadog"): ["Datadog Platform"],
-    ("Observability", "Dynatrace"): ["Dynatrace Platform"],
-    ("Observability", "New Relic"): ["New Relic One"],
-    ("Collaboration", "Cisco"): ["Webex Suite", "Webex Contact Center", "Cisco Room"],
-    ("Collaboration", "Microsoft"): ["Teams", "Teams Rooms"],
-    ("Collaboration", "Zoom"): ["Zoom Workplace", "Zoom Rooms"],
+    ("Core Platform", "Primary SaaS Vendor"): [
+        "Workflow Core",
+        "Automation Hub",
+        "Managed Workspace",
+        "Identity Access",
+    ],
+    ("Core Platform", "WorkSuite Cloud"): ["WorkSuite Enterprise", "WorkSuite Automation"],
+    ("Core Platform", "ServiceOps Cloud"): ["ServiceOps Flow", "ServiceOps Desk"],
+    ("Data Platform", "Primary SaaS Vendor"): [
+        "Data Fabric",
+        "Analytics Hub",
+        "AI Workload Manager",
+    ],
+    ("Data Platform", "DataOps Cloud"): ["DataOps Lake", "DataOps Pipelines"],
+    ("Data Platform", "GPU Cloud Partner"): ["GPU Orchestrator", "Model Training Cloud"],
+    ("Security Suite", "Primary SaaS Vendor"): [
+        "Secure Access",
+        "Identity Guard",
+        "Cloud Firewall",
+        "Threat Response",
+    ],
+    ("Security Suite", "SecureEdge Cloud"): ["SecureEdge SSE", "SecureEdge Cortex"],
+    ("Security Suite", "ShieldOps Cloud"): ["ShieldOps SASE", "ShieldOps Firewall"],
+    ("Security Suite", "ZeroTrust Cloud"): ["ZeroTrust Access", "ZeroTrust Broker"],
+    ("Security Suite", "Endpoint Cloud"): ["Endpoint Response"],
+    ("Observability", "Primary SaaS Vendor"): [
+        "Log Analytics",
+        "Digital Experience",
+        "App Telemetry",
+    ],
+    ("Observability", "Observability Cloud A"): ["Observability APM"],
+    ("Observability", "Observability Cloud B"): ["Observability Automation"],
+    ("Observability", "Observability Cloud C"): ["Observability One"],
+    ("Collaboration", "Primary SaaS Vendor"): [
+        "Collaboration Suite",
+        "Contact Center Suite",
+        "Workspace Rooms",
+    ],
+    ("Collaboration", "Productivity Cloud"): ["Productivity Chat", "Productivity Rooms"],
+    ("Collaboration", "Meeting Cloud"): ["Meeting Workplace", "Meeting Rooms"],
 }
 
 PLAY_COMPETITORS = {
-    "Campus Refresh": ["HPE Networking", "Arista", "Huawei", "No Decision"],
-    "Security Platform": [
-        "Palo Alto Networks",
-        "Fortinet",
-        "Zscaler",
-        "CrowdStrike",
+    "Platform Modernization": [
+        "WorkSuite Cloud",
+        "ServiceOps Cloud",
+        "Regional Suite",
         "No Decision",
     ],
-    "AI Data Center": ["Arista", "NVIDIA", "HPE Networking", "White Box", "No Decision"],
-    "Renewal / EA": ["No Decision", "HPE Networking", "Palo Alto Networks", "Fortinet"],
+    "Security Platform": [
+        "SecureEdge Cloud",
+        "ShieldOps Cloud",
+        "ZeroTrust Cloud",
+        "Endpoint Cloud",
+        "No Decision",
+    ],
+    "AI Data Platform": [
+        "DataOps Cloud",
+        "GPU Cloud Partner",
+        "WorkSuite Cloud",
+        "Open Platform",
+        "No Decision",
+    ],
+    "Renewal / Enterprise Plan": [
+        "No Decision",
+        "WorkSuite Cloud",
+        "SecureEdge Cloud",
+        "ShieldOps Cloud",
+    ],
 }
 
 
@@ -90,12 +147,12 @@ def _random_date(rng: np.random.Generator, start: pd.Timestamp, end: pd.Timestam
     return start + pd.Timedelta(days=int(rng.integers(0, days)))
 
 
-def _vendor_for_family(rng: np.random.Generator, family: str, cisco_affinity: float = 0.0) -> str:
+def _vendor_for_family(rng: np.random.Generator, family: str, primary_affinity: float = 0.0) -> str:
     vendors, base_probs = VENDOR_PROBABILITIES[family]
     probs = np.array(base_probs, dtype=float)
-    if "Cisco" in vendors:
-        idx = vendors.index("Cisco")
-        shift = min(max(cisco_affinity, -0.20), 0.20)
+    if "Primary SaaS Vendor" in vendors:
+        idx = vendors.index("Primary SaaS Vendor")
+        shift = min(max(primary_affinity, -0.20), 0.20)
         probs[idx] = max(0.05, probs[idx] + shift)
         others = [i for i in range(len(probs)) if i != idx]
         delta = probs.sum() - 1.0
@@ -176,9 +233,9 @@ def generate_dataset(
                 "strategic_tier": tier,
                 "annual_revenue_jpy_mn": round(revenue, 1),
                 "employee_count": employees,
-                "cisco_relationship_years": int(rng.integers(0, 19)),
+                "primary_relationship_years": int(rng.integers(0, 19)),
                 "security_tool_count": int(rng.integers(1, 10)),
-                "splunk_installed": bool(
+                "log_analytics_installed": bool(
                     rng.random() < (0.48 if segment == "Enterprise" else 0.22)
                 ),
                 "ai_investment_horizon_months": ai_horizon,
@@ -198,7 +255,7 @@ def generate_dataset(
         count = max(2, int(rng.poisson(base)))
         for _ in range(count):
             family = str(rng.choice(PRODUCT_FAMILIES, p=[0.30, 0.19, 0.22, 0.15, 0.14]))
-            affinity = min(account["cisco_relationship_years"] / 100.0, 0.15)
+            affinity = min(account["primary_relationship_years"] / 100.0, 0.15)
             vendor = _vendor_for_family(rng, family, affinity)
             contract_type = str(
                 rng.choice(
@@ -233,13 +290,16 @@ def generate_dataset(
                 ),
                 "adoption_pct": round(adoption, 1),
                 "discount_pct": round(float(np.clip(rng.normal(17, 9), 0, 48)), 1),
-                "ea_eligible": bool(
-                    vendor == "Cisco"
+                "enterprise_plan_eligible": bool(
+                    vendor == "Primary SaaS Vendor"
                     and contract_type != "Enterprise Agreement"
                     and annual_value > 8
                 ),
                 "source_system": str(
-                    rng.choice(["Salesforce", "CCW", "Partner Feed"], p=[0.48, 0.37, 0.15])
+                    rng.choice(
+                        ["Salesforce", "Commerce Portal", "Partner Feed"],
+                        p=[0.48, 0.37, 0.15],
+                    )
                 ),
             }
             contracts.append(record)
@@ -262,10 +322,10 @@ def generate_dataset(
     assets: list[dict[str, Any]] = []
     asset_counter = 1
     for account, allocation in zip(accounts, allocations, strict=True):
-        cisco_affinity = min(account["cisco_relationship_years"] / 80.0, 0.20)
+        primary_affinity = min(account["primary_relationship_years"] / 80.0, 0.20)
         for _ in range(int(allocation)):
             family = str(rng.choice(PRODUCT_FAMILIES, p=[0.37, 0.19, 0.20, 0.12, 0.12]))
-            vendor = _vendor_for_family(rng, family, cisco_affinity)
+            vendor = _vendor_for_family(rng, family, primary_affinity)
             model = _model_for(rng, family, vendor)
             install_date = _random_date(rng, pd.Timestamp("2014-01-01"), AS_OF_DATE)
             lifetime_years = int(rng.integers(5, 10))
@@ -296,7 +356,7 @@ def generate_dataset(
                         )
                     ),
                     "utilization_pct": round(float(np.clip(rng.beta(2.5, 2.2) * 110, 2, 100)), 1),
-                    "port_speed_gbps": int(
+                    "capacity_units": int(
                         rng.choice(
                             [1, 10, 25, 40, 100, 400, 800],
                             p=[0.20, 0.23, 0.12, 0.10, 0.22, 0.10, 0.03],
@@ -341,7 +401,9 @@ def generate_dataset(
 
     entitlements: list[dict[str, Any]] = []
     entitlement_counter = 1
-    eligible_mask = (assets_df["vendor"] == "Cisco") | (rng.random(len(assets_df)) < 0.22)
+    eligible_mask = (assets_df["vendor"] == "Primary SaaS Vendor") | (
+        rng.random(len(assets_df)) < 0.22
+    )
     eligible_indices = assets_df.index[eligible_mask]
     selected = eligible_indices[rng.random(len(eligible_indices)) < 0.82]
     for idx in selected:
@@ -405,10 +467,10 @@ def generate_dataset(
     support_cases_df = pd.DataFrame(support_cases)
 
     play_families = {
-        "Campus Refresh": ["Campus Network"],
-        "Security Platform": ["Security", "Observability"],
-        "AI Data Center": ["Data Center Network"],
-        "Renewal / EA": PRODUCT_FAMILIES,
+        "Platform Modernization": ["Core Platform"],
+        "Security Platform": ["Security Suite", "Observability"],
+        "AI Data Platform": ["Data Platform"],
+        "Renewal / Enterprise Plan": PRODUCT_FAMILIES,
     }
     competitor_signals: list[dict[str, Any]] = []
     signal_counter = 1
@@ -420,8 +482,10 @@ def generate_dataset(
             related_assets = account_assets[
                 account_assets["product_family"].isin(play_families[play])
             ]
-            non_cisco = related_assets.loc[related_assets["vendor"] != "Cisco", "vendor"]
-            incumbent_candidates = non_cisco.value_counts().head(3).index.tolist()
+            non_primary = related_assets.loc[
+                related_assets["vendor"] != "Primary SaaS Vendor", "vendor"
+            ]
+            incumbent_candidates = non_primary.value_counts().head(3).index.tolist()
             candidates = list(dict.fromkeys(incumbent_candidates + PLAY_COMPETITORS[play]))
             competitor = str(rng.choice(candidates)) if candidates else "No Decision"
             signal_type = str(
@@ -531,15 +595,15 @@ def generate_dataset(
         [
             {
                 "event_id": "PE001",
-                "product_family": "Campus Network",
+                "product_family": "Core Platform",
                 "event_type": "Lifecycle",
                 "effective_date": "2026-09-30",
                 "description": "Illustrative legacy campus support transition",
-                "recommended_action": "Assess refresh candidates",
+                "recommended_action": "Assess modernization candidates",
             },
             {
                 "event_id": "PE002",
-                "product_family": "Data Center Network",
+                "product_family": "Data Platform",
                 "event_type": "New Offering",
                 "effective_date": "2026-07-15",
                 "description": "Illustrative higher-speed fabric option",
@@ -547,7 +611,7 @@ def generate_dataset(
             },
             {
                 "event_id": "PE003",
-                "product_family": "Security",
+                "product_family": "Security Suite",
                 "event_type": "Service Level",
                 "effective_date": "2026-08-01",
                 "description": "Illustrative support tier change",
@@ -574,7 +638,8 @@ def generate_dataset(
                 "asset_count": len(assets_df),
                 "synthetic_data": True,
                 "disclaimer": (
-                    "Illustrative synthetic data; not Cisco internal data or actual pricing."
+                    "Illustrative synthetic data; not Primary SaaS Vendor internal "
+                    "data or actual pricing."
                 ),
             }
         ]

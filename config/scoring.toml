@@ -3,39 +3,39 @@ high_priority = 70.0
 medium_priority = 45.0
 minimum_data_confidence_for_forecast = 85.0
 renewal_window_days = 180
-refresh_window_days = 548
+modernization_window_days = 548
 
-[weights.campus_refresh]
+[weights.platform_modernization]
 eol_18m_pct = 0.24
 support_gap_pct = 0.15
-cisco_network_share_pct = 0.16
-network_utilization_pressure = 0.10
+primary_platform_share_pct = 0.16
+platform_utilization_pressure = 0.10
 incident_pressure = 0.10
 contract_fragmentation = 0.10
 competitive_pressure = 0.15
 
 [weights.security_platform]
 security_tool_sprawl = 0.20
-cisco_network_share_pct = 0.18
-splunk_presence = 0.12
+primary_platform_share_pct = 0.18
+log_analytics_presence = 0.12
 security_renewal_pressure = 0.15
 security_incident_pressure = 0.15
 competitive_pressure = 0.10
 contract_fragmentation = 0.10
 
-[weights.ai_data_center]
+[weights.ai_data_platform]
 gpu_cluster_planned = 0.22
 ai_investment_urgency = 0.18
-data_center_refresh_pressure = 0.18
-high_speed_port_gap = 0.14
-cisco_dc_share_pct = 0.12
+data_platform_modernization_pressure = 0.18
+data_throughput_gap = 0.14
+primary_data_share_pct = 0.12
 budget_readiness = 0.08
 competitive_pressure = 0.08
 
-[weights.renewal_ea]
+[weights.renewal_enterprise_plan]
 renewal_value_pressure = 0.24
 contract_fragmentation = 0.17
-ea_eligibility = 0.14
+enterprise_plan_eligibility = 0.14
 support_gap_pct = 0.10
 adoption_health = 0.12
 data_confidence = 0.13
@@ -43,13 +43,13 @@ competitive_pressure = 0.10
 
 [tco]
 default_years = 3
-cisco_refresh_unit_jpy_mn = 0.62
+primary_modernization_unit_jpy_mn = 0.62
 software_attach_rate = 0.18
-cisco_migration_cost_rate = 0.04
+primary_migration_cost_rate = 0.04
 competitor_migration_cost_rate = 0.18
-cisco_training_cost_rate = 0.025
+primary_training_cost_rate = 0.025
 competitor_training_cost_rate = 0.09
-cisco_annual_operations_rate = 0.10
+primary_annual_operations_rate = 0.10
 competitor_annual_operations_rate = 0.13
-cisco_expected_risk_rate = 0.025
+primary_expected_risk_rate = 0.025
 competitor_expected_risk_rate = 0.07

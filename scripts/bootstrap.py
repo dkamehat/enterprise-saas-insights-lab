@@ -1,4 +1,4 @@
-from cisco_insights.pipeline import bootstrap, export_outputs, validate_warehouse
+from saas_insights.pipeline import bootstrap, export_outputs, validate_warehouse
 
 if __name__ == "__main__":
     database = bootstrap()

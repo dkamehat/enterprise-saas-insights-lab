@@ -1,14 +1,14 @@
 # Repository guidance for Codex
 
 ## Purpose
-Build an explainable commercial analytics environment for Sales Insights Analysts. The repository uses synthetic data only. Never represent generated outputs as Cisco internal data, actual pricing, actual win rates, or production recommendations.
+Build an explainable commercial analytics environment for enterprise SaaS portfolio decisions. The repository uses synthetic data only. Never represent generated outputs as any real company's internal data, actual pricing, actual win rates, or production recommendations.
 
 ## Architecture
-- `src/cisco_insights/data_generator.py`: deterministic synthetic source data.
+- `src/saas_insights/data_generator.py`: deterministic synthetic source data.
 - `sql/`: transformations from raw records to account-level commercial features.
-- `src/cisco_insights/scoring.py`: transparent play scoring and score drivers.
-- `src/cisco_insights/recommendations.py`: positioning and next-best-action rules.
-- `src/cisco_insights/tco.py`: adjustable scenario model.
+- `src/saas_insights/scoring.py`: transparent play scoring and score drivers.
+- `src/saas_insights/recommendations.py`: positioning and next-best-action rules.
+- `src/saas_insights/tco.py`: adjustable scenario model.
 - `pages/`: Streamlit decision-support views.
 - `config/scoring.toml`: business-owned weights and thresholds.
 

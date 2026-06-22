@@ -10,9 +10,9 @@ SELECT
     CAST(strategic_tier AS VARCHAR) AS strategic_tier,
     CAST(annual_revenue_jpy_mn AS DOUBLE) AS annual_revenue_jpy_mn,
     CAST(employee_count AS BIGINT) AS employee_count,
-    CAST(cisco_relationship_years AS BIGINT) AS cisco_relationship_years,
+    CAST(primary_relationship_years AS BIGINT) AS primary_relationship_years,
     CAST(security_tool_count AS BIGINT) AS security_tool_count,
-    CAST(splunk_installed AS BOOLEAN) AS splunk_installed,
+    CAST(log_analytics_installed AS BOOLEAN) AS log_analytics_installed,
     CAST(ai_investment_horizon_months AS BIGINT) AS ai_investment_horizon_months,
     CAST(gpu_cluster_planned AS BOOLEAN) AS gpu_cluster_planned,
     CAST(budget_readiness_pct AS DOUBLE) AS budget_readiness_pct,
@@ -35,7 +35,7 @@ SELECT
     CAST(renewal_probability_pct AS DOUBLE) AS renewal_probability_pct,
     CAST(adoption_pct AS DOUBLE) AS adoption_pct,
     CAST(discount_pct AS DOUBLE) AS discount_pct,
-    CAST(ea_eligible AS BOOLEAN) AS ea_eligible,
+    CAST(enterprise_plan_eligible AS BOOLEAN) AS enterprise_plan_eligible,
     CAST(source_system AS VARCHAR) AS source_system
 FROM raw_contracts;
 
@@ -54,7 +54,7 @@ SELECT
     TRY_CAST(end_of_support_date AS DATE) AS end_of_support_date,
     CAST(criticality AS VARCHAR) AS criticality,
     CAST(utilization_pct AS DOUBLE) AS utilization_pct,
-    CAST(port_speed_gbps AS BIGINT) AS port_speed_gbps,
+    CAST(capacity_units AS BIGINT) AS capacity_units,
     NULLIF(TRIM(CAST(contract_id AS VARCHAR)), '') AS contract_id,
     NULLIF(TRIM(CAST(entitlement_id AS VARCHAR)), '') AS entitlement_id,
     CAST(source_system AS VARCHAR) AS source_system,

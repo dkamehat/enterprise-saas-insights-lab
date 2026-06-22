@@ -10,17 +10,22 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from cisco_insights.ui import database_ready, format_jpy_mn, read_df  # noqa: E402
+from saas_insights.ui import database_ready, format_jpy_mn, read_df  # noqa: E402
 
 st.set_page_config(page_title="Executive Portfolio", page_icon="📈", layout="wide")
 st.title("Executive Portfolio")
-st.caption("どのAccountに、どのSales Playを、どの順序で当てるか")
+st.caption("更新・拡張・競合防衛の候補Accountを、価値、勝ち筋、データ信頼度で並べ替えます。")
 
 if not database_ready():
     st.error("先にトップページでデモ環境を構築してください。")
     st.stop()
 
 portfolio = read_df("SELECT * FROM account_positioning")
+
+st.info(
+    "ここでは全Accountを同じ優先度で扱わず、Expected value、Sales Play fit、"
+    "Forecastに使えるデータ品質を組み合わせて営業・CSの集中先を決めます。"
+)
 
 f1, f2, f3, f4 = st.columns(4)
 segment = f1.multiselect("Segment", sorted(portfolio["segment"].unique()), default=[])
@@ -52,6 +57,7 @@ m4.metric(
 left, right = st.columns(2)
 with left:
     st.subheader("Sales Play別Expected Value")
+    st.caption("どの提案テーマが商業価値を作っているかを確認します。")
     by_play = (
         filtered.groupby("recommended_play", as_index=False)["expected_commercial_value_jpy_mn"]
         .sum()
@@ -71,6 +77,7 @@ with left:
     )
 with right:
     st.subheader("Priority × Governance")
+    st.caption("High priorityでもEvidence requiredなら、Commit前に照合タスクへ回します。")
     matrix = filtered.groupby(["priority_band", "governance_status"], as_index=False).size()
     st.plotly_chart(
         px.bar(
@@ -85,6 +92,7 @@ with right:
     )
 
 st.subheader("Top Account Playbook")
+st.caption("AEが次に見るべきAccountと、会話の入口になるNext Best Actionです。")
 columns = [
     "account_name",
     "segment",

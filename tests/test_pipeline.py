@@ -3,8 +3,8 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from cisco_insights.config import get_paths, project_root
-from cisco_insights.pipeline import bootstrap, validate_warehouse
+from saas_insights.config import get_paths, project_root
+from saas_insights.pipeline import bootstrap, validate_warehouse
 
 
 def test_pipeline_end_to_end(tmp_path: Path) -> None:

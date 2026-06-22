@@ -10,17 +10,21 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from cisco_insights.ui import database_ready, read_df  # noqa: E402
+from saas_insights.ui import database_ready, read_df  # noqa: E402
 
 st.set_page_config(page_title="Competitive Positioning", page_icon="⚔️", layout="wide")
 st.title("Competitive Positioning")
-st.caption("Ciscoが勝てる条件と、営業工数を投下すべきAccountを分離")
+st.caption("競合圧力が高いAccountを、勝ち筋の強さと商業価値で分離します。")
 
 if not database_ready():
     st.error("先にトップページでデモ環境を構築してください。")
     st.stop()
 
 frame = read_df("SELECT * FROM account_positioning")
+st.info(
+    "右上に近いAccountは、提案Fitが高い一方で競合圧力も強い領域です。"
+    "早めに価値仮説と証拠を揃え、価格比較だけに持ち込まれないようにします。"
+)
 play = st.selectbox("Sales Play", ["All"] + sorted(frame["recommended_play"].unique().tolist()))
 competitor = st.selectbox(
     "Competitor", ["All"] + sorted(frame["primary_competitor"].unique().tolist())
@@ -42,7 +46,7 @@ fig = px.scatter(
     hover_name="account_name",
     hover_data=["primary_competitor", "priority_score", "data_confidence_pct", "governance_status"],
     labels={
-        "play_fit_score": "Cisco sales-play fit",
+        "play_fit_score": "Primary vendor sales-play fit",
         "competitive_pressure_pct": "Competitive pressure",
         "expected_commercial_value_jpy_mn": "Expected value",
     },
@@ -57,6 +61,7 @@ st.caption(
 )
 
 st.subheader("Account-level positioning")
+st.caption("各Accountで、競合比較の論点と次アクションを確認します。")
 columns = [
     "account_name",
     "recommended_play",
@@ -78,6 +83,7 @@ st.dataframe(
 )
 
 st.subheader("Competitor exposure")
+st.caption("Sales Playごとに、どの競合テーマがExpected valueを押し下げる可能性があるかを見ます。")
 exposure = (
     filtered.groupby(["recommended_play", "primary_competitor"], as_index=False)
     .agg(

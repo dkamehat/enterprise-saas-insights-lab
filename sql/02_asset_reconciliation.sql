@@ -15,12 +15,12 @@ WITH serial_counts AS (
         e.end_date AS entitlement_end_date,
         CASE WHEN a.serial_number IS NULL THEN 1 ELSE 0 END AS missing_serial_flag,
         CASE WHEN COALESCE(sc.serial_count, 0) > 1 THEN 1 ELSE 0 END AS duplicate_serial_flag,
-        CASE WHEN a.vendor = 'Cisco' AND a.contract_id IS NULL THEN 1 ELSE 0 END AS missing_contract_flag,
+        CASE WHEN a.vendor = 'Primary SaaS Vendor' AND a.contract_id IS NULL THEN 1 ELSE 0 END AS missing_contract_flag,
         CASE WHEN a.contract_id IS NOT NULL AND c.contract_id IS NULL THEN 1 ELSE 0 END AS orphan_contract_flag,
         CASE WHEN c.contract_id IS NOT NULL AND c.account_id <> a.account_id THEN 1 ELSE 0 END AS contract_account_mismatch_flag,
         CASE
-            WHEN a.vendor = 'Cisco'
-             AND a.product_family IN ('Security', 'Observability', 'Collaboration')
+            WHEN a.vendor = 'Primary SaaS Vendor'
+             AND a.product_family IN ('Security Suite', 'Observability', 'Collaboration')
              AND a.entitlement_id IS NULL THEN 1 ELSE 0
         END AS missing_entitlement_flag,
         CASE WHEN a.entitlement_id IS NOT NULL AND e.entitlement_id IS NULL THEN 1 ELSE 0 END AS orphan_entitlement_flag,

@@ -3,39 +3,39 @@ WITH asset_agg AS (
     SELECT
         account_id,
         COUNT(*) AS total_assets,
-        COUNT(*) FILTER (WHERE vendor = 'Cisco') AS cisco_assets,
+        COUNT(*) FILTER (WHERE vendor = 'Primary SaaS Vendor') AS primary_assets,
         COUNT(*) FILTER (
-            WHERE vendor = 'Cisco'
-              AND product_family IN ('Campus Network', 'Data Center Network')
+            WHERE vendor = 'Primary SaaS Vendor'
+              AND product_family IN ('Core Platform', 'Data Platform')
               AND end_of_support_date <= DATE '2027-12-21'
-        ) AS refresh_asset_count,
-        100.0 * COUNT(*) FILTER (WHERE vendor = 'Cisco') / NULLIF(COUNT(*), 0) AS cisco_share_pct,
+        ) AS modernization_asset_count,
+        100.0 * COUNT(*) FILTER (WHERE vendor = 'Primary SaaS Vendor') / NULLIF(COUNT(*), 0) AS primary_share_pct,
         100.0 * COUNT(*) FILTER (
-            WHERE vendor = 'Cisco' AND product_family IN ('Campus Network', 'Data Center Network')
-        ) / NULLIF(COUNT(*) FILTER (WHERE product_family IN ('Campus Network', 'Data Center Network')), 0) AS cisco_network_share_pct,
+            WHERE vendor = 'Primary SaaS Vendor' AND product_family IN ('Core Platform', 'Data Platform')
+        ) / NULLIF(COUNT(*) FILTER (WHERE product_family IN ('Core Platform', 'Data Platform')), 0) AS primary_platform_share_pct,
         100.0 * COUNT(*) FILTER (
-            WHERE vendor = 'Cisco' AND product_family = 'Data Center Network'
-        ) / NULLIF(COUNT(*) FILTER (WHERE product_family = 'Data Center Network'), 0) AS cisco_dc_share_pct,
+            WHERE vendor = 'Primary SaaS Vendor' AND product_family = 'Data Platform'
+        ) / NULLIF(COUNT(*) FILTER (WHERE product_family = 'Data Platform'), 0) AS primary_data_share_pct,
         100.0 * COUNT(*) FILTER (
-            WHERE vendor = 'Cisco'
-              AND product_family IN ('Campus Network', 'Data Center Network')
+            WHERE vendor = 'Primary SaaS Vendor'
+              AND product_family IN ('Core Platform', 'Data Platform')
               AND end_of_support_date <= DATE '2027-12-21'
         ) / NULLIF(COUNT(*) FILTER (
-            WHERE vendor = 'Cisco' AND product_family IN ('Campus Network', 'Data Center Network')
+            WHERE vendor = 'Primary SaaS Vendor' AND product_family IN ('Core Platform', 'Data Platform')
         ), 0) AS eol_18m_pct,
         100.0 * COUNT(*) FILTER (
-            WHERE vendor = 'Cisco'
+            WHERE vendor = 'Primary SaaS Vendor'
               AND (missing_contract_flag = 1 OR orphan_contract_flag = 1 OR contract_account_mismatch_flag = 1)
-        ) / NULLIF(COUNT(*) FILTER (WHERE vendor = 'Cisco'), 0) AS support_gap_pct,
+        ) / NULLIF(COUNT(*) FILTER (WHERE vendor = 'Primary SaaS Vendor'), 0) AS support_gap_pct,
         100.0 * COUNT(*) FILTER (
-            WHERE product_family = 'Data Center Network' AND port_speed_gbps < 400
-        ) / NULLIF(COUNT(*) FILTER (WHERE product_family = 'Data Center Network'), 0) AS high_speed_port_gap_pct,
+            WHERE product_family = 'Data Platform' AND capacity_units < 400
+        ) / NULLIF(COUNT(*) FILTER (WHERE product_family = 'Data Platform'), 0) AS data_throughput_gap_pct,
         100.0 * AVG(
             CASE
-                WHEN product_family IN ('Campus Network', 'Data Center Network')
+                WHEN product_family IN ('Core Platform', 'Data Platform')
                 THEN GREATEST(0, LEAST(1, (utilization_pct - 65.0) / 35.0))
             END
-        ) AS network_utilization_pressure_pct,
+        ) AS platform_utilization_pressure_pct,
         AVG(asset_data_confidence_pct) AS data_confidence_pct,
         100.0 * COUNT(*) FILTER (WHERE reconciliation_status = 'Verified') / NULLIF(COUNT(*), 0) AS verified_assets_pct,
         100.0 * COUNT(*) FILTER (WHERE reconciliation_status = 'Reconcilable') / NULLIF(COUNT(*), 0) AS reconcilable_assets_pct,
@@ -45,24 +45,24 @@ WITH asset_agg AS (
 ), contract_agg AS (
     SELECT
         account_id,
-        COUNT(*) FILTER (WHERE vendor = 'Cisco' AND status IN ('Active', 'Pending')) AS active_cisco_contracts,
+        COUNT(*) FILTER (WHERE vendor = 'Primary SaaS Vendor' AND status IN ('Active', 'Pending')) AS active_primary_contracts,
         COUNT(DISTINCT DATE_TRUNC('month', end_date)) FILTER (
-            WHERE vendor = 'Cisco'
+            WHERE vendor = 'Primary SaaS Vendor'
               AND end_date BETWEEN DATE '2026-06-21' AND DATE '2028-06-21'
         ) AS renewal_month_count_24m,
-        SUM(annual_value_jpy_mn) FILTER (WHERE vendor = 'Cisco' AND status IN ('Active', 'Pending')) AS cisco_annual_contract_value_jpy_mn,
+        SUM(annual_value_jpy_mn) FILTER (WHERE vendor = 'Primary SaaS Vendor' AND status IN ('Active', 'Pending')) AS primary_annual_contract_value_jpy_mn,
         SUM(annual_value_jpy_mn) FILTER (
-            WHERE vendor = 'Cisco'
+            WHERE vendor = 'Primary SaaS Vendor'
               AND end_date BETWEEN DATE '2026-06-21' AND DATE '2026-12-18'
         ) AS renewal_value_180d_jpy_mn,
         SUM(annual_value_jpy_mn) FILTER (
-            WHERE vendor = 'Cisco'
-              AND product_family = 'Security'
+            WHERE vendor = 'Primary SaaS Vendor'
+              AND product_family = 'Security Suite'
               AND end_date BETWEEN DATE '2026-06-21' AND DATE '2027-06-21'
         ) AS security_renewal_12m_jpy_mn,
-        AVG(adoption_pct) FILTER (WHERE vendor = 'Cisco' AND status IN ('Active', 'Pending')) AS avg_adoption_pct,
-        COUNT(*) FILTER (WHERE vendor = 'Cisco' AND ea_eligible) AS ea_eligible_contracts,
-        COUNT(*) FILTER (WHERE vendor = 'Cisco' AND contract_type = 'Enterprise Agreement' AND status IN ('Active', 'Pending')) AS active_ea_contracts
+        AVG(adoption_pct) FILTER (WHERE vendor = 'Primary SaaS Vendor' AND status IN ('Active', 'Pending')) AS avg_adoption_pct,
+        COUNT(*) FILTER (WHERE vendor = 'Primary SaaS Vendor' AND enterprise_plan_eligible) AS enterprise_plan_eligible_contracts,
+        COUNT(*) FILTER (WHERE vendor = 'Primary SaaS Vendor' AND contract_type = 'Enterprise Agreement' AND status IN ('Active', 'Pending')) AS active_enterprise_plan_contracts
     FROM stg_contracts
     GROUP BY account_id
 ), support_agg AS (
@@ -80,14 +80,14 @@ WITH asset_agg AS (
         MAX(signal_strength_pct) AS competitive_pressure_pct,
         ARG_MAX(competitor, signal_strength_pct) AS top_competitor,
         COUNT(*) AS competitor_signal_count,
-        MAX(signal_strength_pct) FILTER (WHERE sales_play = 'Campus Refresh') AS campus_competitive_pressure_pct,
-        ARG_MAX(competitor, signal_strength_pct) FILTER (WHERE sales_play = 'Campus Refresh') AS campus_competitor,
+        MAX(signal_strength_pct) FILTER (WHERE sales_play = 'Platform Modernization') AS platform_competitive_pressure_pct,
+        ARG_MAX(competitor, signal_strength_pct) FILTER (WHERE sales_play = 'Platform Modernization') AS platform_competitor,
         MAX(signal_strength_pct) FILTER (WHERE sales_play = 'Security Platform') AS security_competitive_pressure_pct,
         ARG_MAX(competitor, signal_strength_pct) FILTER (WHERE sales_play = 'Security Platform') AS security_competitor,
-        MAX(signal_strength_pct) FILTER (WHERE sales_play = 'AI Data Center') AS ai_competitive_pressure_pct,
-        ARG_MAX(competitor, signal_strength_pct) FILTER (WHERE sales_play = 'AI Data Center') AS ai_competitor,
-        MAX(signal_strength_pct) FILTER (WHERE sales_play = 'Renewal / EA') AS renewal_competitive_pressure_pct,
-        ARG_MAX(competitor, signal_strength_pct) FILTER (WHERE sales_play = 'Renewal / EA') AS renewal_competitor
+        MAX(signal_strength_pct) FILTER (WHERE sales_play = 'AI Data Platform') AS ai_competitive_pressure_pct,
+        ARG_MAX(competitor, signal_strength_pct) FILTER (WHERE sales_play = 'AI Data Platform') AS ai_competitor,
+        MAX(signal_strength_pct) FILTER (WHERE sales_play = 'Renewal / Enterprise Plan') AS renewal_competitive_pressure_pct,
+        ARG_MAX(competitor, signal_strength_pct) FILTER (WHERE sales_play = 'Renewal / Enterprise Plan') AS renewal_competitor
     FROM stg_competitor_signals
     GROUP BY account_id
 ), opportunity_agg AS (
@@ -104,27 +104,27 @@ WITH asset_agg AS (
 SELECT
     a.*,
     COALESCE(x.total_assets, 0) AS total_assets,
-    COALESCE(x.cisco_assets, 0) AS cisco_assets,
-    COALESCE(x.refresh_asset_count, 0) AS refresh_asset_count,
-    COALESCE(x.cisco_share_pct, 0) AS cisco_share_pct,
-    COALESCE(x.cisco_network_share_pct, 0) AS cisco_network_share_pct,
-    COALESCE(x.cisco_dc_share_pct, 0) AS cisco_dc_share_pct,
+    COALESCE(x.primary_assets, 0) AS primary_assets,
+    COALESCE(x.modernization_asset_count, 0) AS modernization_asset_count,
+    COALESCE(x.primary_share_pct, 0) AS primary_share_pct,
+    COALESCE(x.primary_platform_share_pct, 0) AS primary_platform_share_pct,
+    COALESCE(x.primary_data_share_pct, 0) AS primary_data_share_pct,
     COALESCE(x.eol_18m_pct, 0) AS eol_18m_pct,
     COALESCE(x.support_gap_pct, 0) AS support_gap_pct,
-    COALESCE(x.high_speed_port_gap_pct, 0) AS high_speed_port_gap_pct,
-    COALESCE(x.network_utilization_pressure_pct, 0) AS network_utilization_pressure_pct,
+    COALESCE(x.data_throughput_gap_pct, 0) AS data_throughput_gap_pct,
+    COALESCE(x.platform_utilization_pressure_pct, 0) AS platform_utilization_pressure_pct,
     COALESCE(x.data_confidence_pct, 0) AS data_confidence_pct,
     COALESCE(x.verified_assets_pct, 0) AS verified_assets_pct,
     COALESCE(x.reconcilable_assets_pct, 0) AS reconcilable_assets_pct,
     COALESCE(x.unknown_assets_pct, 0) AS unknown_assets_pct,
-    COALESCE(c.active_cisco_contracts, 0) AS active_cisco_contracts,
+    COALESCE(c.active_primary_contracts, 0) AS active_primary_contracts,
     COALESCE(c.renewal_month_count_24m, 0) AS renewal_month_count_24m,
-    COALESCE(c.cisco_annual_contract_value_jpy_mn, 0) AS cisco_annual_contract_value_jpy_mn,
+    COALESCE(c.primary_annual_contract_value_jpy_mn, 0) AS primary_annual_contract_value_jpy_mn,
     COALESCE(c.renewal_value_180d_jpy_mn, 0) AS renewal_value_180d_jpy_mn,
     COALESCE(c.security_renewal_12m_jpy_mn, 0) AS security_renewal_12m_jpy_mn,
     COALESCE(c.avg_adoption_pct, 0) AS avg_adoption_pct,
-    COALESCE(c.ea_eligible_contracts, 0) AS ea_eligible_contracts,
-    COALESCE(c.active_ea_contracts, 0) AS active_ea_contracts,
+    COALESCE(c.enterprise_plan_eligible_contracts, 0) AS enterprise_plan_eligible_contracts,
+    COALESCE(c.active_enterprise_plan_contracts, 0) AS active_enterprise_plan_contracts,
     COALESCE(s.support_case_count_18m, 0) AS support_case_count_18m,
     COALESCE(s.severe_case_count_18m, 0) AS severe_case_count_18m,
     COALESCE(s.open_case_count, 0) AS open_case_count,
@@ -132,8 +132,8 @@ SELECT
     COALESCE(g.competitive_pressure_pct, 0) AS competitive_pressure_pct,
     COALESCE(g.top_competitor, 'No Decision') AS top_competitor,
     COALESCE(g.competitor_signal_count, 0) AS competitor_signal_count,
-    COALESCE(g.campus_competitive_pressure_pct, 0) AS campus_competitive_pressure_pct,
-    COALESCE(g.campus_competitor, 'No Decision') AS campus_competitor,
+    COALESCE(g.platform_competitive_pressure_pct, 0) AS platform_competitive_pressure_pct,
+    COALESCE(g.platform_competitor, 'No Decision') AS platform_competitor,
     COALESCE(g.security_competitive_pressure_pct, 0) AS security_competitive_pressure_pct,
     COALESCE(g.security_competitor, 'No Decision') AS security_competitor,
     COALESCE(g.ai_competitive_pressure_pct, 0) AS ai_competitive_pressure_pct,
@@ -146,7 +146,7 @@ SELECT
     COALESCE(o.avg_quote_variance_pct, 0) AS avg_quote_variance_pct,
     COALESCE(o.commit_count, 0) AS commit_count,
     LEAST(100.0, GREATEST(0.0,
-        55.0 * LEAST(1.0, COALESCE(c.active_cisco_contracts, 0) / 8.0)
+        55.0 * LEAST(1.0, COALESCE(c.active_primary_contracts, 0) / 8.0)
         + 45.0 * LEAST(1.0, COALESCE(c.renewal_month_count_24m, 0) / 8.0)
     )) AS contract_fragmentation_pct,
     LEAST(100.0, 35.0 * COALESCE(s.severe_case_count_18m, 0) + 10.0 * COALESCE(s.open_case_count, 0)) AS incident_pressure_pct

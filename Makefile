@@ -6,10 +6,10 @@ setup:
 	$(PYTHON) -m pip install -e ".[dev]"
 
 bootstrap:
-	$(PYTHON) -m cisco_insights.cli bootstrap --accounts 250 --assets 25000 --seed 42
+	$(PYTHON) -m saas_insights.cli bootstrap --accounts 250 --assets 25000 --seed 42
 
 build:
-	$(PYTHON) -m cisco_insights.cli build
+	$(PYTHON) -m saas_insights.cli build
 
 app:
 	streamlit run app.py
@@ -21,7 +21,7 @@ lint:
 	ruff check .
 
 export:
-	$(PYTHON) -m cisco_insights.cli export
+	$(PYTHON) -m saas_insights.cli export
 
 clean:
 	rm -f data/raw/*.csv data/warehouse/*.duckdb outputs/*.csv

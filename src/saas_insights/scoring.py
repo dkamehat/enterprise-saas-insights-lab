@@ -10,17 +10,17 @@ import pandas as pd
 from .recommendations import data_story, next_best_action, positioning_angle
 
 PLAY_CONFIG = {
-    "Campus Refresh": {
-        "config_key": "campus_refresh",
-        "competitor_column": "campus_competitor",
+    "Platform Modernization": {
+        "config_key": "platform_modernization",
+        "competitor_column": "platform_competitor",
         "feature_map": {
             "eol_18m_pct": "eol_18m_pct",
             "support_gap_pct": "support_gap_pct",
-            "cisco_network_share_pct": "cisco_network_share_pct",
-            "network_utilization_pressure": "network_utilization_pressure_pct",
+            "primary_platform_share_pct": "primary_platform_share_pct",
+            "platform_utilization_pressure": "platform_utilization_pressure_pct",
             "incident_pressure": "incident_pressure_pct",
             "contract_fragmentation": "contract_fragmentation_pct",
-            "competitive_pressure": "campus_competitive_pressure_pct",
+            "competitive_pressure": "platform_competitive_pressure_pct",
         },
     },
     "Security Platform": {
@@ -28,34 +28,34 @@ PLAY_CONFIG = {
         "competitor_column": "security_competitor",
         "feature_map": {
             "security_tool_sprawl": "security_tool_sprawl_pct",
-            "cisco_network_share_pct": "cisco_network_share_pct",
-            "splunk_presence": "splunk_presence_pct",
+            "primary_platform_share_pct": "primary_platform_share_pct",
+            "log_analytics_presence": "log_analytics_presence_pct",
             "security_renewal_pressure": "security_renewal_pressure_pct",
             "security_incident_pressure": "incident_pressure_pct",
             "competitive_pressure": "security_competitive_pressure_pct",
             "contract_fragmentation": "contract_fragmentation_pct",
         },
     },
-    "AI Data Center": {
-        "config_key": "ai_data_center",
+    "AI Data Platform": {
+        "config_key": "ai_data_platform",
         "competitor_column": "ai_competitor",
         "feature_map": {
             "gpu_cluster_planned": "gpu_cluster_planned_pct",
             "ai_investment_urgency": "ai_investment_urgency_pct",
-            "data_center_refresh_pressure": "eol_18m_pct",
-            "high_speed_port_gap": "high_speed_port_gap_pct",
-            "cisco_dc_share_pct": "cisco_dc_share_pct",
+            "data_platform_modernization_pressure": "eol_18m_pct",
+            "data_throughput_gap": "data_throughput_gap_pct",
+            "primary_data_share_pct": "primary_data_share_pct",
             "budget_readiness": "budget_readiness_pct",
             "competitive_pressure": "ai_competitive_pressure_pct",
         },
     },
-    "Renewal / EA": {
-        "config_key": "renewal_ea",
+    "Renewal / Enterprise Plan": {
+        "config_key": "renewal_enterprise_plan",
         "competitor_column": "renewal_competitor",
         "feature_map": {
             "renewal_value_pressure": "renewal_value_pressure_pct",
             "contract_fragmentation": "contract_fragmentation_pct",
-            "ea_eligibility": "ea_eligibility_pct",
+            "enterprise_plan_eligibility": "enterprise_plan_eligibility_pct",
             "support_gap_pct": "support_gap_pct",
             "adoption_health": "avg_adoption_pct",
             "data_confidence": "data_confidence_pct",
@@ -72,8 +72,10 @@ def _clip(series: pd.Series) -> pd.Series:
 def _prepare_features(frame: pd.DataFrame) -> pd.DataFrame:
     df = frame.copy()
     df["security_tool_sprawl_pct"] = ((df["security_tool_count"] - 1) / 8 * 100).clip(0, 100)
-    df["splunk_presence_pct"] = df["splunk_installed"].astype(bool).astype(float) * 100
-    annual = pd.to_numeric(df["cisco_annual_contract_value_jpy_mn"], errors="coerce").fillna(0.0)
+    df["log_analytics_presence_pct"] = (
+        df["log_analytics_installed"].astype(bool).astype(float) * 100
+    )
+    annual = pd.to_numeric(df["primary_annual_contract_value_jpy_mn"], errors="coerce").fillna(0.0)
     security_renewal = pd.to_numeric(df["security_renewal_12m_jpy_mn"], errors="coerce").fillna(0.0)
     df["security_renewal_pressure_pct"] = (security_renewal / annual.clip(lower=1.0) * 100).clip(
         0, 100
@@ -81,8 +83,8 @@ def _prepare_features(frame: pd.DataFrame) -> pd.DataFrame:
     horizon = pd.to_numeric(df["ai_investment_horizon_months"], errors="coerce").fillna(60.0)
     df["ai_investment_urgency_pct"] = ((60 - horizon) / 54 * 100).clip(0, 100)
     df["gpu_cluster_planned_pct"] = df["gpu_cluster_planned"].astype(bool).astype(float) * 100
-    df["ea_eligibility_pct"] = (
-        pd.to_numeric(df["ea_eligible_contracts"], errors="coerce").fillna(0) / 4 * 100
+    df["enterprise_plan_eligibility_pct"] = (
+        pd.to_numeric(df["enterprise_plan_eligible_contracts"], errors="coerce").fillna(0) / 4 * 100
     ).clip(0, 100)
     renewal_value = pd.to_numeric(df["renewal_value_180d_jpy_mn"], errors="coerce").fillna(0.0)
     if renewal_value.nunique(dropna=False) <= 1:
@@ -114,19 +116,19 @@ def _score_play(
     return total.clip(0, 100), driver_rows
 
 
-def _play_tcv(row: Mapping[str, Any], play: str, unit_refresh_jpy_mn: float) -> float:
-    refresh_assets = float(row.get("refresh_asset_count", 0) or 0)
-    annual_value = float(row.get("cisco_annual_contract_value_jpy_mn", 0) or 0)
+def _play_tcv(row: Mapping[str, Any], play: str, unit_modernization_jpy_mn: float) -> float:
+    modernization_assets = float(row.get("modernization_asset_count", 0) or 0)
+    annual_value = float(row.get("primary_annual_contract_value_jpy_mn", 0) or 0)
     renewal_value = float(row.get("renewal_value_180d_jpy_mn", 0) or 0)
     security_tools = float(row.get("security_tool_count", 0) or 0)
     employee_count = float(row.get("employee_count", 0) or 0)
     gpu = bool(row.get("gpu_cluster_planned", False))
 
     estimates = {
-        "Campus Refresh": max(5.0, refresh_assets * unit_refresh_jpy_mn * 1.18),
+        "Platform Modernization": max(5.0, modernization_assets * unit_modernization_jpy_mn * 1.18),
         "Security Platform": max(5.0, annual_value * 0.60 + security_tools * 4.0),
-        "AI Data Center": max(8.0, min(2_500.0, employee_count / 90.0 * (1.35 if gpu else 0.55))),
-        "Renewal / EA": max(3.0, renewal_value * 3.0 + annual_value * 0.25),
+        "AI Data Platform": max(8.0, min(2_500.0, employee_count / 90.0 * (1.35 if gpu else 0.55))),
+        "Renewal / Enterprise Plan": max(3.0, renewal_value * 3.0 + annual_value * 0.25),
     }
     return round(float(estimates[play]), 2)
 
@@ -142,10 +144,10 @@ def score_accounts(frame: pd.DataFrame, config: Mapping[str, Any]) -> pd.DataFra
         play_driver_maps[play_name] = drivers
 
     score_columns = {
-        "Campus Refresh": "campus_refresh_score",
+        "Platform Modernization": "platform_modernization_score",
         "Security Platform": "security_platform_score",
-        "AI Data Center": "ai_data_center_score",
-        "Renewal / EA": "renewal_ea_score",
+        "AI Data Platform": "ai_data_platform_score",
+        "Renewal / Enterprise Plan": "renewal_enterprise_plan_score",
     }
     score_matrix = df[list(score_columns.values())].to_numpy(dtype=float)
     play_names = list(score_columns)
@@ -162,7 +164,7 @@ def score_accounts(frame: pd.DataFrame, config: Mapping[str, Any]) -> pd.DataFra
     win_probabilities: list[float] = []
 
     tco_cfg = config["tco"]
-    unit_refresh = float(tco_cfg["cisco_refresh_unit_jpy_mn"])
+    unit_modernization = float(tco_cfg["primary_modernization_unit_jpy_mn"])
 
     for position, (_, row) in enumerate(df.iterrows()):
         play = str(row["recommended_play"])
@@ -177,15 +179,15 @@ def score_accounts(frame: pd.DataFrame, config: Mapping[str, Any]) -> pd.DataFra
         actions.append(next_best_action(play, competitor, row))
         stories.append(data_story(play, competitor, row))
 
-        tcv = _play_tcv(row, play, unit_refresh)
+        tcv = _play_tcv(row, play, unit_modernization)
         tcvs.append(tcv)
-        cisco_fit = float(row.get("cisco_network_share_pct", 0) or 0)
-        if play == "AI Data Center":
-            cisco_fit = float(row.get("cisco_dc_share_pct", 0) or 0)
+        primary_fit = float(row.get("primary_platform_share_pct", 0) or 0)
+        if play == "AI Data Platform":
+            primary_fit = float(row.get("primary_data_share_pct", 0) or 0)
         win_probability = (
             0.55 * float(row["play_fit_score"])
             + 0.25 * float(row.get("data_confidence_pct", 0) or 0)
-            + 0.20 * cisco_fit
+            + 0.20 * primary_fit
         )
         win_probabilities.append(round(float(np.clip(win_probability, 5, 92)), 2))
 

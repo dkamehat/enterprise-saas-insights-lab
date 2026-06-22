@@ -18,11 +18,11 @@ Asset reconciliation
                          |
                          v
 Account feature mart
-    installed-base / lifecycle / renewal / adoption / incident / competition
+    subscription inventory / lifecycle / renewal / adoption / incident / competition
                          |
                          v
 Explainable sales-play scoring
-    Campus / Security / AI DC / Renewal-EA
+    Modernization / Security / AI Data / Enterprise Plan
                          |
                          v
 Decision support
@@ -64,11 +64,11 @@ Account Data ConfidenceはAsset confidenceの平均です。閾値未満のAccou
 
 各スコアは0〜100に正規化されたFeatureと、`config/scoring.toml`の重みの加重和です。
 
-### Campus Refresh
+### Platform Modernization
 
 - EOL / support transition
 - Support gap
-- Cisco Network share
+- Primary vendor platform share
 - Utilization pressure
 - Incident pressure
 - Contract fragmentation
@@ -77,28 +77,28 @@ Account Data ConfidenceはAsset confidenceの平均です。閾値未満のAccou
 ### Security Platform
 
 - Security tool sprawl
-- Cisco Network share
-- Splunk presence
+- Primary vendor platform share
+- Log Analytics presence
 - Security renewal pressure
 - Incident pressure
 - Competitive pressure
 - Contract fragmentation
 
-### AI Data Center
+### AI Data Platform
 
 - GPU cluster plan
 - AI investment urgency
-- Data-center refresh pressure
-- High-speed port gap
-- Cisco DC share
+- Data Platform modernization pressure
+- Data throughput gap
+- Primary vendor data-platform share
 - Budget readiness
 - Competitive pressure
 
-### Renewal / EA
+### Renewal / Enterprise Plan
 
 - Renewal value pressure
 - Contract fragmentation
-- EA eligibility
+- Enterprise Plan eligibility
 - Support gap
 - Adoption health
 - Data confidence
