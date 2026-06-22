@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.env
+.DS_Store
+data/raw/*.csv
+data/warehouse/*.duckdb
+outputs/*.csv
+!data/raw/.gitkeep
+!data/warehouse/.gitkeep
+!outputs/.gitkeep

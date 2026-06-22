@@ -1,0 +1,115 @@
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import plotly.express as px
+import streamlit as st
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(ROOT / "src"))
+
+from cisco_insights.ui import database_ready, format_jpy_mn, read_df  # noqa: E402
+
+st.set_page_config(page_title="Executive Portfolio", page_icon="📈", layout="wide")
+st.title("Executive Portfolio")
+st.caption("どのAccountに、どのSales Playを、どの順序で当てるか")
+
+if not database_ready():
+    st.error("先にトップページでデモ環境を構築してください。")
+    st.stop()
+
+portfolio = read_df("SELECT * FROM account_positioning")
+
+f1, f2, f3, f4 = st.columns(4)
+segment = f1.multiselect("Segment", sorted(portfolio["segment"].unique()), default=[])
+region = f2.multiselect("Region", sorted(portfolio["region"].unique()), default=[])
+tier = f3.multiselect("Strategic tier", sorted(portfolio["strategic_tier"].unique()), default=[])
+priority = f4.multiselect("Priority", ["High", "Medium", "Low"], default=["High", "Medium"])
+
+filtered = portfolio.copy()
+if segment:
+    filtered = filtered[filtered["segment"].isin(segment)]
+if region:
+    filtered = filtered[filtered["region"].isin(region)]
+if tier:
+    filtered = filtered[filtered["strategic_tier"].isin(tier)]
+if priority:
+    filtered = filtered[filtered["priority_band"].isin(priority)]
+
+m1, m2, m3, m4 = st.columns(4)
+m1.metric("対象Accounts", f"{len(filtered):,}")
+m2.metric("High priority", f"{(filtered['priority_band'] == 'High').sum():,}")
+m3.metric(
+    "Expected value", format_jpy_mn(float(filtered["expected_commercial_value_jpy_mn"].sum()))
+)
+m4.metric(
+    "平均Data confidence",
+    f"{filtered['data_confidence_pct'].mean():.1f}%" if len(filtered) else "-",
+)
+
+left, right = st.columns(2)
+with left:
+    st.subheader("Sales Play別Expected Value")
+    by_play = (
+        filtered.groupby("recommended_play", as_index=False)["expected_commercial_value_jpy_mn"]
+        .sum()
+        .sort_values("expected_commercial_value_jpy_mn", ascending=False)
+    )
+    st.plotly_chart(
+        px.bar(
+            by_play,
+            x="recommended_play",
+            y="expected_commercial_value_jpy_mn",
+            labels={
+                "recommended_play": "Sales Play",
+                "expected_commercial_value_jpy_mn": "Expected value (JPY mn)",
+            },
+        ),
+        use_container_width=True,
+    )
+with right:
+    st.subheader("Priority × Governance")
+    matrix = filtered.groupby(["priority_band", "governance_status"], as_index=False).size()
+    st.plotly_chart(
+        px.bar(
+            matrix,
+            x="priority_band",
+            y="size",
+            color="governance_status",
+            barmode="group",
+            labels={"size": "Accounts", "priority_band": "Priority"},
+        ),
+        use_container_width=True,
+    )
+
+st.subheader("Top Account Playbook")
+columns = [
+    "account_name",
+    "segment",
+    "strategic_tier",
+    "priority_score",
+    "recommended_play",
+    "primary_competitor",
+    "expected_commercial_value_jpy_mn",
+    "data_confidence_pct",
+    "governance_status",
+    "next_best_action",
+]
+st.dataframe(
+    filtered.sort_values("priority_score", ascending=False)[columns].head(50),
+    use_container_width=True,
+    hide_index=True,
+    column_config={
+        "expected_commercial_value_jpy_mn": st.column_config.NumberColumn(
+            "Expected value (JPY mn)", format="%.1f"
+        ),
+        "priority_score": st.column_config.ProgressColumn(
+            "Priority", min_value=0, max_value=100, format="%.1f"
+        ),
+        "data_confidence_pct": st.column_config.ProgressColumn(
+            "Data confidence", min_value=0, max_value=100, format="%.1f%%"
+        ),
+    },
+)
