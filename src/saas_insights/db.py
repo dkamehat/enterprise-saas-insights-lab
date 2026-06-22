@@ -17,6 +17,7 @@ RAW_TABLES = [
     "competitor_signals",
     "opportunities",
     "product_events",
+    "planted_quality_signals",
     "dataset_meta",
 ]
 

@@ -476,6 +476,46 @@ st.dataframe(pd.DataFrame(TCO_FORMULAS), use_container_width=True, hide_index=Tr
 with st.expander("Current TCO parameters"):
     st.json(config["tco"])
 
+st.subheader("Planted-Signal Quality Metrics")
+st.markdown(
+    """
+`recall = recovered_known_defects / planted_known_defects`
+
+`FPR = false_positive_flags / non_planted_asset_defect_pairs`
+
+The manifest table records the expected defect type and expected detection flag for
+each planted signal. This prevents the quality page from stopping at
+`Verified / Unknown` counts.
+"""
+)
+
+st.subheader("NRR And True Forward Formulas")
+st.markdown(
+    """
+`modeled_ending_arr = opening_arr - churn_risk - contraction_risk + expansion_potential`
+
+`modeled_nrr_pct = modeled_ending_arr / opening_arr * 100`
+
+`modeled_grr_pct = (opening_arr - churn_risk - contraction_risk) / opening_arr * 100`
+
+`true_forward_overage_units = max(0, consumed_quantity - license_quantity)`
+
+`true_forward_exposure = true_forward_overage_units * illustrative_unit_rate`
+"""
+)
+
+st.subheader("Calibration And Briefing")
+st.markdown(
+    """
+`Brier = average((modeled_win_probability - actual_closed_outcome)^2)`
+
+Closed Won is treated as `1`; Closed Lost is treated as `0`.
+
+Grounded account briefs are deterministic drafts in this public demo. Each brief carries
+source row citations and must pass a citation allow-list check before display.
+"""
+)
+
 st.subheader("Interpretation Guardrails")
 st.markdown(
     """

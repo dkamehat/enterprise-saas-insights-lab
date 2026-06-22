@@ -9,72 +9,83 @@ ROOT = Path(__file__).resolve().parent
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from saas_insights.pipeline import bootstrap, export_outputs, validate_warehouse  # noqa: E402
+from saas_insights.pipeline import (  # noqa: E402
+    bootstrap,
+    export_outputs,
+    validate_warehouse,
+)
 from saas_insights.ui import database_ready, format_jpy_mn, read_df  # noqa: E402
 
 st.set_page_config(
     page_title="Enterprise SaaS Insights Lab",
-    page_icon="📊",
+    page_icon="SaaS",
     layout="wide",
 )
 
 st.title("Enterprise SaaS Insights Lab")
 st.caption(
-    "Synthetic BI workspace for managing enterprise SaaS renewals, adoption, and "
-    "competitive risk."
+    "Synthetic BI workspace for enterprise SaaS renewals, installed-base governance, "
+    "portfolio expansion, and forecast evidence."
 )
 
 st.markdown(
     """
-このデモは、主力SaaSベンダーのポートフォリオを管理する営業・CS・RevOps向けBIツールです。
-合成データだけを使い、契約更新、利用状況、競合シグナル、データ品質をAccount単位でつなげて、
-「どこに営業工数を投下すべきか」「Forecastに入れてよい根拠があるか」を説明できる形にします。
+This lab models a global enterprise SaaS portfolio using synthetic data only. It connects
+accounts, assets, contracts, entitlements, usage, support, opportunities, and competitive
+signals into explainable account-level recommendations.
 
-グローバル地域、業種、業態、営業グループ、担当AE、物理/ハイブリッド/ソフトウェアの
-ポートフォリオ構成を切り口に、大規模データセットの監査とデータストーリーテリングを練習できます。
+The current version emphasizes measurable governance:
 
-実在企業の社内データ、実価格、実際の勝率、正式な製品推奨は含みません。
+- Planted-signal manifest with recall and false-positive-rate tracking
+- NRR decomposition across churn, contraction, and expansion
+- True Forward style exposure from entitled vs consumed quantity
+- Forecast calibration with Brier score
+- Grounded account brief drafts with source-row citations
+- Vendor-neutral interview lens for enterprise SaaS portfolio roles
 """
 )
 
 if not database_ready():
-    st.warning("データベースが未構築です。")
-    st.code("python -m pip install -e .\npython -m saas_insights.cli bootstrap")
-    if st.button("合成データでデモ環境を構築", type="primary"):
-        with st.spinner("合成データとWarehouseを構築中..."):
+    st.warning("The demo warehouse has not been built yet.")
+    st.code(
+        "python -m pip install -e .\n"
+        "python -m saas_insights.cli bootstrap --accounts 250 --assets 25000 --seed 42"
+    )
+    if st.button("Build synthetic demo warehouse", type="primary"):
+        with st.spinner("Generating synthetic data and DuckDB warehouse..."):
             bootstrap()
             export_outputs()
-        st.success("構築しました。ページを再読み込みしてください。")
+        st.success("Warehouse built. Reloading the app.")
         st.rerun()
     st.stop()
 
 summary = read_df("SELECT * FROM portfolio_summary").iloc[0]
 validation = validate_warehouse()
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5 = st.columns(5)
 col1.metric("Accounts", f"{int(summary['account_count']):,}")
 col2.metric("Assets", f"{int(validation['assets']):,}")
 col3.metric(
-    "Expected commercial value", format_jpy_mn(float(summary["expected_commercial_value_jpy_mn"]))
+    "Expected value",
+    format_jpy_mn(float(summary["expected_commercial_value_jpy_mn"])),
 )
 col4.metric("Forecast-ready", f"{int(summary['forecast_ready_accounts']):,}")
+col5.metric("Known defects", f"{int(validation['known_quality_signals']):,}")
 
-st.subheader("分析フロー")
+st.subheader("Decision Flow")
 st.markdown(
     """
 ```text
-Subscription inventory / Contract / Entitlement / Usage / Support / CRM / Competitor signals
-                                  ↓
-                         Asset reconciliation
-                                  ↓
-             Account features + explainable play scoring
-                                  ↓
-       Competitive positioning / TCO / Next Best Action / Governance
+Subscription inventory / Contract / Entitlement / Usage / Support / CRM / Signals
+                                  -> Asset reconciliation + planted-signal audit
+                                  -> Account features + explainable play scoring
+                                  -> NRR / True Forward / calibration / grounded brief
+                                  -> Human-approved sales and forecast review
 ```
 """
 )
 
-st.subheader("実装済みSales Play")
+st.subheader("Sales Plays")
 st.dataframe(
     {
         "Sales Play": [
@@ -83,23 +94,17 @@ st.dataframe(
             "AI Data Platform",
             "Renewal / Enterprise Plan",
         ],
-        "主な判断材料": [
-            "ライフサイクル移行、契約Gap、主力ベンダー比率、障害、競合PoC",
-            "セキュリティツール乱立、Log Analytics連携、更新集中、インシデント、競合",
-            "AI投資時期、データ処理容量、Data Platform刷新、予算、競合",
-            "180日更新額、契約分散、Enterprise Plan適格性、Adoption、データ信頼度",
+        "Primary evidence": [
+            "Lifecycle pressure, support gaps, utilization, incidents, competition",
+            "Security tool sprawl, log analytics, renewals, incidents, competition",
+            "AI horizon, GPU plan, data capacity, data-platform share, budget",
+            "Renewal value, contract fragmentation, enterprise-plan eligibility, adoption",
         ],
-        "営業出力": [
-            "Modernization優先順位・TCO・段階導入",
-            "Platform統合仮説・SOC工数比較",
-            "AI-ready Discovery・PoC候補",
-            "Base/Downside/Upside・契約集約シナリオ",
-        ],
-        "読み方": [
-            "古い契約や低利用モジュールを残すコストを可視化します",
-            "点在したセキュリティSaaSを統合する商業価値を見ます",
-            "AI活用に必要なデータ基盤と運用準備度を見ます",
-            "更新を事務処理ではなくForecast判断として管理します",
+        "Decision output": [
+            "Modernization priority and TCO scenario",
+            "Consolidation story and security-platform action",
+            "AI-ready discovery and data-platform expansion",
+            "ARR/NRR review, evidence status, and expansion path",
         ],
     },
     use_container_width=True,
@@ -107,7 +112,7 @@ st.dataframe(
 )
 
 st.info(
-    "左メニューからPortfolio、Account 360、Competitive Positioning、"
-    "Data Quality、Model Governanceを確認できます。各画面は、営業判断の根拠を"
-    "スコア、ドライバー、データ品質、次アクションに分解して表示します。"
+    "Use the sidebar to move from portfolio prioritization to account diagnosis, "
+    "competitive positioning, data-quality measurement, governance, formulas, and "
+    "revenue assurance."
 )

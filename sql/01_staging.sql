@@ -134,3 +134,15 @@ SELECT
     CAST(description AS VARCHAR) AS description,
     CAST(recommended_action AS VARCHAR) AS recommended_action
 FROM raw_product_events;
+
+CREATE OR REPLACE TABLE stg_planted_quality_signals AS
+SELECT
+    CAST(signal_id AS VARCHAR) AS signal_id,
+    CAST(asset_id AS VARCHAR) AS asset_id,
+    CAST(account_id AS VARCHAR) AS account_id,
+    CAST(defect_type AS VARCHAR) AS defect_type,
+    CAST(expected_flag_column AS VARCHAR) AS expected_flag_column,
+    CAST(planted_level AS VARCHAR) AS planted_level,
+    CAST(severity AS VARCHAR) AS severity,
+    CAST(reason AS VARCHAR) AS reason
+FROM raw_planted_quality_signals;

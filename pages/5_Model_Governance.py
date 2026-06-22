@@ -5,101 +5,177 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import plotly.express as px
 import streamlit as st
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
+from saas_insights.briefing import build_grounded_account_brief, validate_grounding  # noqa: E402
 from saas_insights.config import load_scoring_config  # noqa: E402
 from saas_insights.ui import database_ready, read_df  # noqa: E402
 
-st.set_page_config(page_title="Model Governance", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="Model Governance", page_icon="MG", layout="wide")
 st.title("Model Governance")
-st.caption("Score → Driver → Evidence → Human decision を追跡できるようにします。")
+st.caption(
+    "Trace score weights, calibration, grounded briefing, and human decision boundaries."
+)
 
 if not database_ready():
-    st.error("先にトップページでデモ環境を構築してください。")
+    st.error("Build the demo warehouse from the top page first.")
     st.stop()
 
 config = load_scoring_config()
-st.info(
-    "このデモのスコアは説明可能なルールベースです。AIは根拠の要約や下書きに限定し、"
-    "価格、契約範囲、Forecast commitのSource of Truthにはしません。"
-)
-rows = []
+weights_rows = []
 for model, weights in config["weights"].items():
     for feature, weight in weights.items():
-        rows.append({"model": model, "feature": feature, "weight": weight})
-weights_df = pd.DataFrame(rows)
+        weights_rows.append({"model": model, "feature": feature, "weight": weight})
+weights_df = pd.DataFrame(weights_rows)
 
-c1, c2 = st.columns([1.2, 1])
-with c1:
-    st.subheader("Business-owned score weights")
-    st.caption("営業・Finance・RevOpsがレビューできる重みだけでスコアを作ります。")
-    st.dataframe(weights_df, use_container_width=True, hide_index=True)
-with c2:
-    st.subheader("Decision boundaries")
-    st.caption("High/Mediumの境界と、Forecastに使える最低Data confidenceです。")
-    st.json(config["thresholds"])
+calibration = read_df("SELECT * FROM forecast_calibration")
+calibration_summary = read_df("SELECT * FROM forecast_calibration_summary").iloc[0]
 
-st.subheader("Control design")
-st.caption("どの判断をルール、AI、人が担当するかを明確に分けます。")
-st.dataframe(
-    {
-        "Layer": ["Deterministic logic", "Optional AI", "Human approval", "Audit"],
-        "Allowed": [
-            "Asset照合、契約対象、価格式、ルールベースScore",
-            "承認済みEvidenceの要約、コメント分類、Briefドラフト",
-            "価格、Discount、Forecast category、顧客提示",
-            "入力Record、Rule version、出力、Override理由",
-        ],
-        "Prohibited / constrained": [
-            "根拠なしの上書き",
-            "Entitlement・価格・ComplianceをSource of Truthとして決定",
-            "Evidence不明のCommit",
-            "追跡不能な手修正",
-        ],
-    },
-    use_container_width=True,
-    hide_index=True,
+c1, c2, c3, c4 = st.columns(4)
+c1.metric("Closed opps", f"{int(calibration_summary['closed_opportunities']):,}")
+c2.metric("Avg Brier", f"{float(calibration_summary['avg_brier_score']):.3f}")
+c3.metric("Avg calibration gap", f"{float(calibration_summary['avg_calibration_gap_pct']):.1f}%")
+c4.metric("Max calibration gap", f"{float(calibration_summary['max_calibration_gap_pct']):.1f}%")
+
+weights_tab, calibration_tab, brief_tab, lens_tab = st.tabs(
+    ["Weights & Controls", "Calibration", "Grounded Brief", "Interview Lens"]
 )
 
-st.subheader("Role Requirement Mapping")
-st.markdown(
-    "- **Large dataset operations**: account, contract, entitlement, usage, and "
-    "competitive signals are combined into account-level governance views.\n"
-    "- **Complex data logic**: weighted scoring, bounded confidence, renewal risk, "
-    "and source reconciliation stay explainable in SQL and TOML.\n"
-    "- **Stakeholder storytelling**: executive, sales, data quality, and governance "
-    "pages reuse the same facts at different decision depths."
-)
-st.caption("大規模データ、複雑な構造監査、社内向けデータストーリーテリングの説明材料です。")
-st.dataframe(
-    {
-        "Requirement lens": [
-            "Large dataset operations",
-            "Complex data logic",
-            "Data structure audit",
-            "Stakeholder storytelling",
-            "Salesforce / BI tool readiness",
-            "Agility and resilience",
-        ],
-        "How this lab demonstrates it": [
-            "25,000 subscription assetsをAccount、契約、権利、利用、競合Signalへ結合",
-            "TOML重み、SQL特徴量、bounded score、TCO式を分離して管理",
-            "Serial、Contract、Entitlement、Account alignment、Source systemを監査",
-            "Executive、AE、Data Quality、Governanceごとに同じ事実を別視点で説明",
-            "CRM由来のOpportunity、Commerce Portal、Partner FeedをBI martへ変換",
-            "ルールベースをChampionにして、後からML/AI challengerを差し替え可能",
-        ],
-    },
-    use_container_width=True,
-    hide_index=True,
-)
+with weights_tab:
+    left, right = st.columns([1.2, 1])
+    with left:
+        st.subheader("Business-Owned Score Weights")
+        st.dataframe(weights_df, use_container_width=True, hide_index=True)
+    with right:
+        st.subheader("Decision Boundaries")
+        st.json(config["thresholds"])
 
-st.subheader("Score audit sample")
-st.caption("各Accountの推奨PlayとDriverを追跡し、後から説明できる状態にします。")
+    st.subheader("Control Design")
+    st.dataframe(
+        {
+            "Layer": ["Deterministic logic", "Grounded brief", "Human approval", "Audit"],
+            "Allowed": [
+                "Asset reconciliation, bounded scores, TCV formulas, and priority ranking",
+                "Evidence-cited stakeholder draft using governed account and asset rows",
+                "Pricing, discounting, entitlement action, and forecast commit decisions",
+                "Input records, manifest truth, rule versions, score drivers, and citations",
+            ],
+            "Constrained": [
+                "No ungrounded forecast or pricing recommendation",
+                "No external model call in the public demo and no unsupported claims",
+                "No commit forecast when evidence threshold is not met",
+                "No manual override without traceable evidence",
+            ],
+        },
+        use_container_width=True,
+        hide_index=True,
+    )
+
+with calibration_tab:
+    st.subheader("Probability Calibration")
+    st.caption("Closed Won/Lost outcomes are compared with modeled win probability buckets.")
+    st.plotly_chart(
+        px.line(
+            calibration,
+            x="probability_bucket",
+            y=["avg_predicted_probability_pct", "actual_win_rate_pct"],
+            markers=True,
+            labels={
+                "probability_bucket": "Predicted probability bucket",
+                "value": "Percent",
+                "variable": "Series",
+            },
+        ),
+        use_container_width=True,
+    )
+    st.dataframe(calibration, use_container_width=True, hide_index=True)
+
+with brief_tab:
+    st.subheader("Grounded Account Brief")
+    accounts = read_df(
+        """
+        SELECT *
+        FROM account_positioning
+        ORDER BY priority_score DESC
+        LIMIT 50
+        """
+    )
+    selected_account = st.selectbox(
+        "Account",
+        accounts["account_id"].tolist(),
+        format_func=lambda account_id: accounts.set_index("account_id").loc[
+            account_id, "account_name"
+        ],
+    )
+    account_row = accounts[accounts["account_id"] == selected_account].iloc[0].to_dict()
+    evidence = read_df(
+        """
+        SELECT asset_id, account_id, asset_data_confidence_pct, issue_summary
+        FROM asset_reconciliation
+        WHERE account_id = ?
+          AND issue_summary IS NOT NULL
+          AND issue_summary <> ''
+        ORDER BY asset_data_confidence_pct ASC
+        LIMIT 5
+        """,
+        [selected_account],
+    )
+    evidence_rows = evidence.to_dict("records")
+    brief = build_grounded_account_brief(account_row, evidence_rows)
+    allowed = {f"account_positioning:{selected_account}"} | {
+        f"asset_reconciliation:{row['asset_id']}" for row in evidence_rows
+    }
+
+    st.success(f"Grounding check: {validate_grounding(brief, allowed)}")
+    st.json(brief)
+    st.dataframe(evidence, use_container_width=True, hide_index=True)
+
+with lens_tab:
+    st.subheader("Vendor-Neutral Interview Lens")
+    st.caption(
+        "The data remains generic. This table translates the demo vocabulary into "
+        "enterprise SaaS / networking portfolio-management language."
+    )
+    st.dataframe(
+        {
+            "Demo term": [
+                "Primary SaaS Vendor",
+                "Enterprise Plan",
+                "Renewal / Enterprise Plan",
+                "True Forward exposure",
+                "Asset reconciliation",
+                "Forecast-ready",
+                "Grounded brief",
+            ],
+            "Interview lens": [
+                "Incumbent strategic vendor footprint",
+                "Enterprise agreement or portfolio-wide subscription construct",
+                "ARR/NRR motion with churn, contraction, and expansion review",
+                "Consumption above entitlement requiring commercial review",
+                "Install base, entitlement, contract, and account alignment",
+                "Evidence quality is sufficient for scenario forecast review",
+                "Agentic summary constrained to cited CRM and asset evidence",
+            ],
+            "Guardrail": [
+                "No real vendor or customer data is included",
+                "No production pricing or contract terms are encoded",
+                "Forecast remains human-approved",
+                "Exposure is scenario analytics, not an invoice",
+                "Manifest recall/FPR measures logic quality",
+                "Low confidence routes to evidence work",
+                "Unsupported claims fail the grounding check",
+            ],
+        },
+        use_container_width=True,
+        hide_index=True,
+    )
+
+st.subheader("Score Audit Sample")
 audit = read_df(
     """
     SELECT account_id, account_name, priority_score, priority_band,
@@ -112,25 +188,7 @@ audit = read_df(
 )
 st.dataframe(audit, use_container_width=True, hide_index=True)
 
-st.subheader("Export governed AE playbook")
-export = read_df(
-    """
-    SELECT account_id, account_name, ae_name, recommended_play, primary_competitor,
-           priority_score, priority_band, estimated_tcv_jpy_mn,
-           expected_commercial_value_jpy_mn, data_confidence_pct,
-           governance_status, positioning_angle, next_best_action, data_story
-    FROM account_positioning
-    ORDER BY priority_score DESC
-    """
-)
-st.download_button(
-    "CSVをダウンロード",
-    data=export.to_csv(index=False).encode("utf-8-sig"),
-    file_name="governed_ae_playbook.csv",
-    mime="text/csv",
-)
-
-with st.expander("Top recordのDriverを展開"):
+with st.expander("Top record driver breakdown"):
     if not audit.empty:
         top = audit.iloc[0]
         st.write(top["account_name"])

@@ -76,11 +76,9 @@ def export_outputs(paths: Paths | None = None) -> list[Path]:
             ORDER BY priority_score DESC
         """,
         "data_quality_summary.csv": """
-            SELECT reconciliation_status, COUNT(*) AS asset_count,
-                   AVG(asset_data_confidence_pct) AS avg_confidence_pct
-            FROM asset_reconciliation
-            GROUP BY reconciliation_status
-            ORDER BY asset_count DESC
+            SELECT *
+            FROM quality_signal_metrics
+            ORDER BY planted_level, defect_type
         """,
         "renewal_pipeline.csv": """
             SELECT * FROM renewal_pipeline
@@ -112,11 +110,32 @@ def validate_warehouse(paths: Paths | None = None) -> dict[str, int | float]:
                 (
                     SELECT COUNT(*) FROM account_positioning
                     WHERE governance_status = 'Forecast-ready'
-                ) AS forecast_ready_accounts
+                ) AS forecast_ready_accounts,
+                (
+                    SELECT planted_count FROM quality_signal_metrics
+                    WHERE planted_level = 'ALL' AND defect_type = 'ALL'
+                ) AS known_quality_signals,
+                (
+                    SELECT recall_pct FROM quality_signal_metrics
+                    WHERE planted_level = 'ALL' AND defect_type = 'ALL'
+                ) AS quality_signal_recall_pct,
+                (
+                    SELECT fpr FROM quality_signal_metrics
+                    WHERE planted_level = 'ALL' AND defect_type = 'ALL'
+                ) AS quality_signal_fpr
             """
         ).fetchone()
     assert metrics is not None
-    keys = ["accounts", "assets", "scored_accounts", "verified_assets", "forecast_ready_accounts"]
+    keys = [
+        "accounts",
+        "assets",
+        "scored_accounts",
+        "verified_assets",
+        "forecast_ready_accounts",
+        "known_quality_signals",
+        "quality_signal_recall_pct",
+        "quality_signal_fpr",
+    ]
     result = dict(zip(keys, metrics, strict=True))
     if result["accounts"] != result["scored_accounts"]:
         raise AssertionError("Every account must have exactly one scored record")

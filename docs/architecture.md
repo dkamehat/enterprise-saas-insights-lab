@@ -1,118 +1,96 @@
 # Architecture
 
-## Design principle
+## Design Principle
 
-この環境の中心は「予測モデル」ではなく、**Evidenceから営業判断までの監査可能な変換**です。
+This lab is not a black-box prediction model. It is an auditable BI transformation from
+evidence to sales and renewal decision support.
 
 ```text
 Synthetic source tables
-    accounts / assets / contracts / entitlements
-    support cases / opportunities / competitor signals
-    sales coverage / business model / portfolio domain
+  accounts / contracts / assets / entitlements / opportunities
+  support cases / competitor signals / planted quality manifest
                          |
                          v
 DuckDB raw + staging tables
                          |
                          v
 Asset reconciliation
-    uniqueness / completeness / account alignment / staleness
+  identity / contract / entitlement / freshness / True Forward exposure
+                         |
+                         v
+Planted-signal evaluation
+  known defects / recovered defects / recall / FPR
                          |
                          v
 Account feature mart
-    subscription inventory / lifecycle / renewal / adoption / incident / competition
-    sales theater / sales group / industry / business model / portfolio complexity
+  installed base / lifecycle / renewal / adoption / incident / competition
                          |
                          v
 Explainable sales-play scoring
-    Modernization / Security / AI Data / Enterprise Plan
+  Modernization / Security / AI Data / Renewal Enterprise Plan
                          |
                          v
 Decision support
-    priority / positioning / TCO / NBA / governance / exports
+  priority / NRR / True Forward / calibration / grounded brief / exports
 ```
 
 ## Why DuckDB
 
-ローカルでCSVを直接取り込み、SQL transformationと分析テーブルを一つのファイルで再現しやすいためです。本番ではSnowflake、BigQuery、Databricks等へ置き換えられます。
+DuckDB keeps the demo local, reproducible, and easy to inspect. In production, the same
+modeling layers could be implemented in Snowflake, BigQuery, Databricks, Sigma, or a
+Salesforce-connected BI stack.
 
-## Why deterministic scoring first
+## Data Confidence
 
-- Score contributionを営業・Finance・Complianceに説明できる
-- 学習データがなくても動く
-- データリーケージを避けやすい
-- Business ownerがTOMLで重みを変更できる
-- 将来のMLモデルに対するChampion baselineになる
+Asset reconciliation checks:
 
-## Data confidence
-
-Assetごとに以下を検査します。
-
-- Missing / duplicate serial
-- Missing / orphan contract
-- Contract-account mismatch
-- Missing / orphan entitlement
-- Entitlement-account mismatch
+- Missing or duplicate serial
+- Missing, orphaned, or mismatched contract
+- Missing, orphaned, or mismatched entitlement
+- True Forward overconsumption where consumed quantity exceeds entitled quantity
 - Stale verification
 
-結果は以下へ分類します。
+The planted-quality manifest records the expected defect type and expected detection flag.
+`quality_signal_metrics` then measures recall and false-positive rate, so the demo can say
+how many known defects were recovered rather than only showing `Verified / Unknown` status.
 
-- **Verified**: 定義したIssueがない
-- **Reconcilable**: 軽微なIssueで照合可能
-- **Unknown**: 主キーまたはAccount alignmentに重大なIssue
+## Revenue Assurance
 
-Account Data ConfidenceはAsset confidenceの平均です。閾値未満のAccountはForecast Commitから外し、Evidence requiredにします。
+NRR is decomposed into:
 
-## Sales-play scoring
+- Opening ARR
+- Churn risk
+- Contraction risk
+- Expansion potential
+- Modeled ending ARR
 
-各スコアは0〜100に正規化されたFeatureと、`config/scoring.toml`の重みの加重和です。
+True Forward exposure is calculated from separate `license_quantity` and
+`consumed_quantity` fields.
 
-### Platform Modernization
+## Model Governance
 
-- EOL / support transition
-- Support gap
-- Primary vendor platform share
-- Utilization pressure
-- Incident pressure
-- Contract fragmentation
-- Competitive pressure
+The scoring layer remains deterministic and explainable:
 
-### Security Platform
+- Business-owned weights live in `config/scoring.toml`
+- Account scoring is generated in `src/saas_insights/scoring.py`
+- Forecast calibration compares modeled win probability with Closed Won/Lost outcomes
+- Brier score and calibration gap are shown in the governance page
 
-- Security tool sprawl
-- Primary vendor platform share
-- Log Analytics presence
-- Security renewal pressure
-- Incident pressure
-- Competitive pressure
-- Contract fragmentation
+## Grounded Briefing
 
-### AI Data Platform
+The public demo implements a deterministic grounded brief draft. It is designed to show
+agentic workflow discipline without calling an external model:
 
-- GPU cluster plan
-- AI investment urgency
-- Data Platform modernization pressure
-- Data throughput gap
-- Primary vendor data-platform share
-- Budget readiness
-- Competitive pressure
+- The brief uses account and asset rows already present in the warehouse
+- Source row IDs are attached as citations
+- `validate_grounding` rejects briefs with unsupported citations
+- Pricing, discounting, entitlement actions, and forecast commits remain human-approved
 
-### Renewal / Enterprise Plan
-
-- Renewal value pressure
-- Contract fragmentation
-- Enterprise Plan eligibility
-- Support gap
-- Adoption health
-- Data confidence
-- Competitive pressure
-
-## Governance boundary
+## Governance Boundary
 
 | Layer | Responsibility |
 |---|---|
-| Deterministic SQL / rules | Asset scope, contract alignment, pricing formulas, score components |
-| Optional AI | Approved evidence summarization, note classification, briefing draft |
+| Deterministic SQL / rules | Reconciliation, feature engineering, scoring, NRR, True Forward exposure |
+| Grounded brief | Evidence-cited summary draft only |
 | Human approval | Price, discount, forecast commit, customer-facing recommendation |
-| Audit | Source record IDs, rule version, output, reviewer, override reason |
-
-Generative AIをEntitlement、価格、Compliance、Forecast categoryのSource of Truthにはしません。
+| Audit | Source record IDs, planted manifest, rule version, score drivers, citations |

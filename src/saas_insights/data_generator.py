@@ -166,9 +166,17 @@ def _choice(
     )
 
 
+def _days(value: int | float) -> pd.Timedelta:
+    return pd.to_timedelta(value, unit="D")
+
+
+def _hours(value: int | float) -> pd.Timedelta:
+    return pd.to_timedelta(value, unit="h")
+
+
 def _random_date(rng: np.random.Generator, start: pd.Timestamp, end: pd.Timestamp) -> pd.Timestamp:
     days = max((end - start).days, 1)
-    return start + pd.Timedelta(days=int(rng.integers(0, days)))
+    return start + _days(int(rng.integers(0, days)))
 
 
 def _vendor_for_family(rng: np.random.Generator, family: str, primary_affinity: float = 0.0) -> str:
@@ -189,6 +197,166 @@ def _vendor_for_family(rng: np.random.Generator, family: str, primary_affinity: 
 def _model_for(rng: np.random.Generator, family: str, vendor: str) -> str:
     candidates = MODELS.get((family, vendor), [f"{vendor} {family} Product"])
     return str(rng.choice(candidates))
+
+
+def _missing(value: Any) -> bool:
+    return (
+        value is None
+        or (isinstance(value, float) and np.isnan(value))
+        or str(value).strip() == ""
+    )
+
+
+def _build_quality_signal_manifest(
+    assets_df: pd.DataFrame,
+    contracts_df: pd.DataFrame,
+    entitlements_df: pd.DataFrame,
+) -> pd.DataFrame:
+    rows: list[dict[str, Any]] = []
+    serial_counts = assets_df["serial_number"].dropna().astype(str).value_counts().to_dict()
+    contract_accounts = contracts_df.set_index("contract_id")["account_id"].to_dict()
+    entitlement_accounts = entitlements_df.set_index("entitlement_id")["account_id"].to_dict()
+    entitlement_license = entitlements_df.set_index("entitlement_id")["license_quantity"].to_dict()
+    entitlement_consumed = entitlements_df.set_index("entitlement_id")[
+        "consumed_quantity"
+    ].to_dict()
+
+    def add(
+        asset: pd.Series,
+        defect_type: str,
+        expected_flag_column: str,
+        planted_level: str,
+        severity: str,
+        reason: str,
+    ) -> None:
+        rows.append(
+            {
+                "signal_id": f"PQS{len(rows) + 1:07d}",
+                "asset_id": asset["asset_id"],
+                "account_id": asset["account_id"],
+                "defect_type": defect_type,
+                "expected_flag_column": expected_flag_column,
+                "planted_level": planted_level,
+                "severity": severity,
+                "reason": reason,
+            }
+        )
+
+    for _, asset in assets_df.iterrows():
+        serial = asset["serial_number"]
+        contract_id = asset["contract_id"]
+        entitlement_id = asset["entitlement_id"]
+
+        if _missing(serial):
+            add(
+                asset,
+                "missing_serial",
+                "missing_serial_flag",
+                "L0",
+                "High",
+                "Serial key was intentionally removed.",
+            )
+        elif serial_counts.get(str(serial), 0) > 1:
+            add(
+                asset,
+                "duplicate_serial",
+                "duplicate_serial_flag",
+                "L0",
+                "High",
+                "Serial key appears on more than one asset.",
+            )
+
+        if asset["vendor"] == "Primary SaaS Vendor" and _missing(contract_id):
+            add(
+                asset,
+                "missing_contract",
+                "missing_contract_flag",
+                "L1",
+                "Medium",
+                "Primary-vendor asset has no contract reference.",
+            )
+        elif not _missing(contract_id) and str(contract_id) not in contract_accounts:
+            add(
+                asset,
+                "orphan_contract",
+                "orphan_contract_flag",
+                "L1",
+                "High",
+                "Asset references a contract that does not exist.",
+            )
+        elif (
+            not _missing(contract_id)
+            and contract_accounts.get(str(contract_id)) != asset["account_id"]
+        ):
+            add(
+                asset,
+                "contract_account_mismatch",
+                "contract_account_mismatch_flag",
+                "L0",
+                "Critical",
+                "Asset account does not match referenced contract account.",
+            )
+
+        entitlement_required = (
+            asset["vendor"] == "Primary SaaS Vendor"
+            and asset["product_family"] in {"Security Suite", "Observability", "Collaboration"}
+        )
+        if entitlement_required and _missing(entitlement_id):
+            add(
+                asset,
+                "missing_entitlement",
+                "missing_entitlement_flag",
+                "L1",
+                "Medium",
+                "Entitlement-required asset has no entitlement reference.",
+            )
+        elif not _missing(entitlement_id) and str(entitlement_id) not in entitlement_accounts:
+            add(
+                asset,
+                "orphan_entitlement",
+                "orphan_entitlement_flag",
+                "L1",
+                "High",
+                "Asset references an entitlement that does not exist.",
+            )
+        elif (
+            not _missing(entitlement_id)
+            and entitlement_accounts.get(str(entitlement_id)) != asset["account_id"]
+        ):
+            add(
+                asset,
+                "entitlement_account_mismatch",
+                "entitlement_account_mismatch_flag",
+                "L0",
+                "Critical",
+                "Asset account does not match referenced entitlement account.",
+            )
+
+        if not _missing(entitlement_id) and str(entitlement_id) in entitlement_license:
+            consumed = float(entitlement_consumed[str(entitlement_id)])
+            licensed = float(entitlement_license[str(entitlement_id)])
+            if consumed > licensed:
+                add(
+                    asset,
+                    "true_forward_overconsumption",
+                    "true_forward_exposure_flag",
+                    "L0",
+                    "High",
+                    "Consumed quantity is greater than entitled quantity.",
+                )
+
+        verified_date = pd.to_datetime(asset["last_verified_date"], errors="coerce")
+        if pd.isna(verified_date) or verified_date < AS_OF_DATE - _days(365):
+            add(
+                asset,
+                "stale_verification",
+                "stale_verification_flag",
+                "L1",
+                "Low",
+                "Asset verification is older than the governance freshness threshold.",
+            )
+
+    return pd.DataFrame(rows)
 
 
 def generate_dataset(
@@ -330,9 +498,9 @@ def generate_dataset(
             )
             term_years = int(rng.choice([1, 3, 5], p=[0.48, 0.42, 0.10]))
             start = _random_date(
-                rng, AS_OF_DATE - pd.Timedelta(days=4 * 365), AS_OF_DATE + pd.Timedelta(days=180)
+                rng, AS_OF_DATE - _days(4 * 365), AS_OF_DATE + _days(180)
             )
-            end = start + pd.Timedelta(days=term_years * 365)
+            end = start + _days(term_years * 365)
             status = (
                 "Expired" if end < AS_OF_DATE else ("Pending" if start > AS_OF_DATE else "Active")
             )
@@ -397,8 +565,8 @@ def generate_dataset(
             portfolio_domain, deployment_model, commercial_model = PRODUCT_PORTFOLIO[family]
             install_date = _random_date(rng, pd.Timestamp("2014-01-01"), AS_OF_DATE)
             lifetime_years = int(rng.integers(5, 10))
-            eol_date = install_date + pd.Timedelta(days=lifetime_years * 365)
-            eos_date = eol_date + pd.Timedelta(days=int(rng.integers(365, 1095)))
+            eol_date = install_date + _days(lifetime_years * 365)
+            eos_date = eol_date + _days(int(rng.integers(365, 1095)))
             matching_contracts = contract_lookup.get((account["account_id"], vendor, family), [])
             contract_id = (
                 str(rng.choice(matching_contracts))
@@ -442,7 +610,7 @@ def generate_dataset(
                         )
                     ),
                     "last_verified_date": _random_date(
-                        rng, AS_OF_DATE - pd.Timedelta(days=730), AS_OF_DATE
+                        rng, AS_OF_DATE - _days(730), AS_OF_DATE
                     )
                     .date()
                     .isoformat(),
@@ -486,7 +654,11 @@ def generate_dataset(
             account_id = str(
                 rng.choice(accounts_df.loc[accounts_df["account_id"] != account_id, "account_id"])
             )
-        consumed = float(np.clip(rng.beta(2.5, 1.7), 0.01, 1.0))
+        license_quantity = float(max(1, int(asset["capacity_units"])))
+        consumption_ratio = float(np.clip(rng.beta(2.5, 1.7) * 1.18, 0.02, 1.35))
+        if rng.random() < 0.045:
+            consumption_ratio = float(rng.uniform(1.02, 1.45))
+        consumed = round(license_quantity * consumption_ratio, 3)
         entitlements.append(
             {
                 "entitlement_id": entitlement_id,
@@ -494,13 +666,13 @@ def generate_dataset(
                 "account_id": account_id,
                 "vendor": asset["vendor"],
                 "product_family": asset["product_family"],
-                "license_quantity": 1,
-                "consumed_quantity": round(consumed, 3),
+                "license_quantity": license_quantity,
+                "consumed_quantity": consumed,
                 "support_level": str(
                     rng.choice(["Basic", "Enhanced", "Premium"], p=[0.34, 0.49, 0.17])
                 ),
                 "start_date": asset["install_date"],
-                "end_date": (AS_OF_DATE + pd.Timedelta(days=int(rng.integers(-300, 900))))
+                "end_date": (AS_OF_DATE + _days(int(rng.integers(-300, 900))))
                 .date()
                 .isoformat(),
             }
@@ -513,7 +685,7 @@ def generate_dataset(
     )
     support_cases: list[dict[str, Any]] = []
     for i, (_, asset) in enumerate(support_assets.iterrows(), start=1):
-        opened = _random_date(rng, AS_OF_DATE - pd.Timedelta(days=540), AS_OF_DATE)
+        opened = _random_date(rng, AS_OF_DATE - _days(540), AS_OF_DATE)
         severity = str(rng.choice(["S1", "S2", "S3", "S4"], p=[0.05, 0.20, 0.48, 0.27]))
         resolution = float(
             np.clip(
@@ -530,7 +702,7 @@ def generate_dataset(
                 "opened_date": opened.date().isoformat(),
                 "closed_date": None
                 if is_open
-                else (opened + pd.Timedelta(hours=resolution)).date().isoformat(),
+                else (opened + _hours(resolution)).date().isoformat(),
                 "resolution_hours": round(resolution, 1),
                 "status": "Open" if is_open else "Closed",
             }
@@ -581,7 +753,7 @@ def generate_dataset(
                     "signal_type": signal_type,
                     "signal_strength_pct": round(float(np.clip(rng.normal(62, 22), 10, 100)), 1),
                     "observed_date": _random_date(
-                        rng, AS_OF_DATE - pd.Timedelta(days=420), AS_OF_DATE
+                        rng, AS_OF_DATE - _days(420), AS_OF_DATE
                     )
                     .date()
                     .isoformat(),
@@ -643,7 +815,7 @@ def generate_dataset(
                     "sales_play": play,
                     "competitor": competitor,
                     "stage": stage,
-                    "close_date": (AS_OF_DATE + pd.Timedelta(days=int(rng.integers(-120, 500))))
+                    "close_date": (AS_OF_DATE + _days(int(rng.integers(-120, 500))))
                     .date()
                     .isoformat(),
                     "amount_jpy_mn": round(amount, 2),
@@ -699,6 +871,12 @@ def generate_dataset(
         ]
     )
 
+    planted_quality_signals_df = _build_quality_signal_manifest(
+        assets_df,
+        contracts_df,
+        entitlements_df,
+    )
+
     metadata_df = pd.DataFrame(
         [
             {
@@ -725,6 +903,7 @@ def generate_dataset(
         "competitor_signals": competitor_signals_df,
         "opportunities": opportunities_df,
         "product_events": product_events_df,
+        "planted_quality_signals": planted_quality_signals_df,
         "dataset_meta": metadata_df,
     }
     paths: dict[str, Path] = {}

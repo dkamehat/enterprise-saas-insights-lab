@@ -2,7 +2,7 @@
 
 ## Validation status
 
-- Unit and integration tests: 4 passed
+- Unit and integration tests: 5 passed
 - Ruff: passed
 - Streamlit health endpoint: passed
 - Warehouse invariants: passed
@@ -12,22 +12,27 @@
 - Accounts: 250
 - Assets: 25,000
 - Scored accounts: 250
-- Verified assets: 8,045
-- Forecast-ready accounts: 214
-- Evidence-required accounts: 36
+- Verified assets: 8,055
+- Forecast-ready accounts: 216
+- Evidence-required accounts: 34
+- Known quality signals: 24,802
+- Quality signal recall: 100.0%
+- Quality signal FPR: 0.0
+- True Forward exposure: JPY 2,326.7M
+- Average modeled NRR: 95.1%
 
 ## Sales-play distribution
 
-- AI Data Platform: 113
-- Renewal / Enterprise Plan: 65
-- Platform Modernization: 39
-- Security Platform: 33
+- AI Data Platform: 115
+- Renewal / Enterprise Plan: 58
+- Security Platform: 40
+- Platform Modernization: 37
 
 ## Priority distribution
 
-- High: 69
-- Medium: 160
-- Low: 21
+- High: 64
+- Medium: 166
+- Low: 20
 
 ## Added analytical dimensions
 
