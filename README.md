@@ -99,6 +99,11 @@ Priorityが高いAccountを、Expected ValueとData Confidenceを含めて絞り
 
 Scoreの重み、Driver、Data Confidence、Forecast recommendationを追跡します。
 
+### 6. Dataset Blueprint
+
+ER-style relationship map, source-system assumptions, table grain, row counts,
+relationship rules, and a physical schema inspector for the demo warehouse.
+
 ## コマンド
 
 ```bash
