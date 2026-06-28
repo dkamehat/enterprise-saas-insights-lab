@@ -14,6 +14,9 @@ dashboard:
 screenshots:
 	$(PYTHON) scripts/capture_screenshots.py
 
+demo-gif:
+	$(PYTHON) scripts/capture_demo_gif.py
+
 build:
 	$(PYTHON) -m saas_insights.cli build
 

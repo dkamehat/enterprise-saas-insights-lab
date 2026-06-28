@@ -13,6 +13,10 @@ governance boundary kept intact end to end.
 > All data is synthetic and generated from a fixed seed. No employer, customer,
 > pricing, credential, or personal data is used anywhere in this repository.
 
+![Walkthrough: GTM Economics and the Executive Portfolio](docs/assets/demo.gif)
+
+*Walkthrough of the GTM Economics view and the Executive Portfolio (synthetic data).*
+
 ---
 
 ## The 30-second version
