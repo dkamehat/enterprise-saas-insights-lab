@@ -1,0 +1,72 @@
+<!doctype html>
+<!--
+  GAS HtmlService template for the GTM Operations web app.
+  Renders the payload returned by getData() (BigQuery-backed, with a synthetic
+  fallback). Charts use the native Canvas API so the surface has zero external
+  dependencies and works on any device an operations team uses.
+-->
+<html>
+<head>
+<base target="_top">
+<style>
+  body { font-family: Roboto, Arial, sans-serif; margin: 0; color: #1f2933; background: #f7f8fa; }
+  header { padding: 16px 22px; background: #fff; border-bottom: 1px solid #e4e7eb; }
+  h1 { font-size: 18px; margin: 0; }
+  main { padding: 18px 22px; max-width: 1100px; margin: 0 auto; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .card { background: #fff; border: 1px solid #e4e7eb; border-radius: 10px; padding: 12px 14px; }
+  .label { color: #7b8794; font-size: 12px; } .value { font-size: 22px; font-weight: 600; }
+  .panel { background: #fff; border: 1px solid #e4e7eb; border-radius: 10px; padding: 14px; margin-top: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 9px; border-bottom: 1px solid #e4e7eb; }
+  th { color: #7b8794; }
+  @media (max-width: 760px) { .cards { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<header><h1>GTM Operations Dashboard</h1>
+  <div class="label">Unified BigQuery backbone · delivered to ops via Apps Script</div></header>
+<main>
+  <div class="cards" id="cards">Loading…</div>
+  <div class="panel"><h3>ARR &amp; YoY growth</h3><canvas id="arr" height="200"></canvas></div>
+  <div class="panel"><h3>High-priority accounts</h3>
+    <table id="acct"><thead><tr><th>Account</th><th>Play</th><th>Expected value</th>
+      <th>Status</th><th>Next best action</th></tr></thead><tbody></tbody></table></div>
+</main>
+<script>
+  function yen(v){ return "¥" + Number(v).toLocaleString() + "M"; }
+  function render(d){
+    var k = d.kpis;
+    var cards = [["ARR", yen(k.arr_jpy_mn)], ["Growth YoY", k.growth_yoy_pct.toFixed(0)+"%"],
+      ["NRR", k.nrr_ttm_pct.toFixed(0)+"%"], ["Rule of 40", k.rule_of_40_pct.toFixed(0)],
+      ["Magic #", k.magic_number.toFixed(2)], ["CAC payback", k.cac_payback_months.toFixed(0)+" mo"],
+      ["LTV/CAC", k.ltv_to_cac.toFixed(1)+"x"], ["GRR", k.grr_ttm_pct.toFixed(0)+"%"]];
+    document.getElementById("cards").innerHTML = cards.map(function(c){
+      return '<div class="card"><div class="label">'+c[0]+'</div><div class="value">'+c[1]+'</div></div>';
+    }).join("");
+    var tb = document.querySelector("#acct tbody");
+    tb.innerHTML = d.priority_accounts.map(function(a){
+      return "<tr><td>"+a.account_name+"</td><td>"+a.recommended_play+"</td><td>"+
+        yen(a.expected_commercial_value_jpy_mn || a.expected_value_jpy_mn)+"</td><td>"+
+        a.governance_status+"</td><td>"+a.next_best_action+"</td></tr>";
+    }).join("");
+    drawArr(d.arr_series);
+  }
+  function drawArr(s){
+    var c = document.getElementById("arr"), ctx = c.getContext("2d");
+    var w = c.clientWidth || 700, h = c.height; c.width = w;
+    var max = Math.max.apply(null, s.arr) * 1.1, n = s.arr.length, bw = w / n * 0.7;
+    ctx.fillStyle = "#2f6df6";
+    s.arr.forEach(function(v, i){ var bh = (h-20)*v/max; ctx.fillRect(w*i/n, h-bh-16, bw, bh); });
+    ctx.strokeStyle = "#0a7d4b"; ctx.lineWidth = 2; ctx.beginPath();
+    var g = s.growth, gmin = Math.min.apply(null,g), gmax = Math.max.apply(null,g);
+    g.forEach(function(v,i){ var x=w*(i+0.5)/n, y=h-16-(h-20)*(v-gmin)/((gmax-gmin)||1);
+      i ? ctx.lineTo(x,y) : ctx.moveTo(x,y); }); ctx.stroke();
+  }
+  // In Apps Script: google.script.run.withSuccessHandler(render).getData();
+  if (window.google && google.script && google.script.run) {
+    google.script.run.withSuccessHandler(render).getData();
+  }
+</script>
+</body>
+</html>

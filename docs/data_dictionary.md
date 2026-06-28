@@ -32,6 +32,13 @@ AE note、RFP、PoC、Price quote、Renewal delay等のAccount-level signal。
 
 Sales Play、Competitor、Stage、Amount、Quote、Discount、Forecast category。
 
+### gtm_monthly
+
+時間軸を持つGTMドライバーパネル（`Company` ロールアップ + Segment別、42ヶ月）。
+new / expansion / contraction / churn ARR、revenue、COGS、S&M / R&D / G&A、
+customers、ファネル（MQL/SQL/opportunities/won/lost）、pipeline、quota を月次で保持。
+`src/saas_insights/gtm.py` で決定論的に生成。
+
 ## Core analytical tables
 
 ### asset_reconciliation
@@ -57,6 +64,18 @@ Account単位の特徴量：
 - Competitor pressure
 - Pipeline and quote variance
 - Data confidence
+
+### gtm_monthly_metrics / gtm_company_monthly
+
+GTM経済性Mart（`compute_gtm_metrics` がドライバーから再構成）：
+
+- ARR / net new ARR / YoY growth
+- NRR / GRR（TTM）
+- gross margin / operating margin / Rule of 40
+- Magic Number / CAC / CAC payback / LTV / LTV·CAC / burn multiple
+- pipeline coverage / win rate / quota attainment
+
+`gtm_company_monthly` は Company ロールアップ、`gtm_segment_latest` は最新月のSegment別。
 
 ### account_positioning
 

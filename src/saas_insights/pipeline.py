@@ -7,6 +7,7 @@ import pandas as pd
 from .config import Paths, get_paths, load_scoring_config
 from .data_generator import generate_dataset
 from .db import connect, execute_sql_files, load_raw_tables, table_exists
+from .gtm import compute_gtm_metrics
 from .scoring import score_accounts
 
 
@@ -34,7 +35,19 @@ def build_warehouse(paths: Paths | None = None) -> Path:
             "CREATE OR REPLACE TABLE account_positioning AS SELECT * FROM scored_accounts_df"
         )
         connection.unregister("scored_accounts_df")
-        execute_sql_files(connection, [project_paths.sql / "05_views.sql"])
+
+        gtm_raw = connection.execute("SELECT * FROM raw_gtm_monthly").fetchdf()
+        gtm_metrics = compute_gtm_metrics(gtm_raw)
+        connection.register("gtm_metrics_df", gtm_metrics)
+        connection.execute(
+            "CREATE OR REPLACE TABLE gtm_monthly_metrics AS SELECT * FROM gtm_metrics_df"
+        )
+        connection.unregister("gtm_metrics_df")
+
+        execute_sql_files(
+            connection,
+            [project_paths.sql / "04_gtm.sql", project_paths.sql / "05_views.sql"],
+        )
 
         if not table_exists(connection, "account_positioning"):
             raise RuntimeError("account_positioning was not created")
@@ -83,6 +96,10 @@ def export_outputs(paths: Paths | None = None) -> list[Path]:
         "renewal_pipeline.csv": """
             SELECT * FROM renewal_pipeline
             ORDER BY days_to_renewal, annual_value_jpy_mn DESC
+        """,
+        "gtm_company_monthly.csv": """
+            SELECT * FROM gtm_company_monthly
+            ORDER BY month
         """,
     }
     with connect(project_paths.database, read_only=True) as connection:

@@ -877,6 +877,12 @@ def generate_dataset(
         entitlements_df,
     )
 
+    # Time-aware GTM panel. Imported lazily to avoid a circular import, since the
+    # gtm module reuses AS_OF_DATE from this module.
+    from .gtm import generate_gtm_monthly
+
+    gtm_monthly_df = generate_gtm_monthly(seed=seed)
+
     metadata_df = pd.DataFrame(
         [
             {
@@ -904,6 +910,7 @@ def generate_dataset(
         "opportunities": opportunities_df,
         "product_events": product_events_df,
         "planted_quality_signals": planted_quality_signals_df,
+        "gtm_monthly": gtm_monthly_df,
         "dataset_meta": metadata_df,
     }
     paths: dict[str, Path] = {}

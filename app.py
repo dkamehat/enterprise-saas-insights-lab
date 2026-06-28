@@ -34,14 +34,16 @@ This lab models a global enterprise SaaS portfolio using synthetic data only. It
 accounts, assets, contracts, entitlements, usage, support, opportunities, and competitive
 signals into explainable account-level recommendations.
 
-The current version emphasizes measurable governance:
+The current version emphasizes measurable governance and a Strategy & Operations lens:
 
+- **GTM Economics**: time-aware ARR growth, NRR/GRR, Rule of 40, Magic Number,
+  CAC payback, and LTV/CAC — reconstructed from monthly first-principle drivers
+- One unified backbone delivered to many surfaces (Streamlit, Looker, Apps Script
+  ops web app, AppSheet) — see `docs/reference_architecture.md` and `delivery/`
 - Planted-signal manifest with recall and false-positive-rate tracking
 - NRR decomposition across churn, contraction, and expansion
 - True Forward style exposure from entitled vs consumed quantity
-- Forecast calibration with Brier score
-- Grounded account brief drafts with source-row citations
-- Vendor-neutral interview lens for enterprise SaaS portfolio roles
+- Forecast calibration with Brier score and grounded, citation-checked briefs
 """
 )
 

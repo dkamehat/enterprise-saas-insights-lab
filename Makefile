@@ -1,4 +1,4 @@
-.PHONY: setup bootstrap build app test lint clean export
+.PHONY: setup bootstrap build app test lint clean export dashboard screenshots
 
 PYTHON ?= python
 
@@ -7,6 +7,12 @@ setup:
 
 bootstrap:
 	$(PYTHON) -m saas_insights.cli bootstrap --accounts 250 --assets 25000 --seed 42
+
+dashboard:
+	$(PYTHON) scripts/build_delivery_dashboard.py
+
+screenshots:
+	$(PYTHON) scripts/capture_screenshots.py
 
 build:
 	$(PYTHON) -m saas_insights.cli build
