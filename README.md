@@ -93,9 +93,12 @@ python scripts/build_delivery_dashboard.py
 
 ### Deploy a live demo for free
 
-Push to GitHub, then on [Streamlit Community Cloud](https://share.streamlit.io)
-point a new app at `app.py`. Dependencies come from `requirements.txt`; on first
-load click **Build synthetic demo warehouse**. No paid services required.
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/deploy?repository=dkamehat/enterprise-saas-insights-lab&branch=main&mainModule=app.py)
+
+One click on the badge (sign in with GitHub — free) deploys this repo on
+[Streamlit Community Cloud](https://share.streamlit.io) with `app.py` as the entry
+point and dependencies from `requirements.txt`. On first load, click **Build
+synthetic demo warehouse** to generate the data. No paid services required.
 
 ## Engineering
 
