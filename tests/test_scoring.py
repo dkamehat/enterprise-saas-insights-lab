@@ -101,4 +101,4 @@ def test_low_confidence_is_not_forecast_ready() -> None:
     result = score_accounts(frame, load_scoring_config()).iloc[0]
     assert result["governance_status"] == "Evidence required"
     assert "Commit" in result["forecast_recommendation"]
-    assert "照合" in result["next_best_action"]
+    assert "Reconcile" in result["next_best_action"]

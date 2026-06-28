@@ -14,17 +14,19 @@ from saas_insights.ui import database_ready, format_jpy_mn, read_df  # noqa: E40
 
 st.set_page_config(page_title="Executive Portfolio", page_icon="📈", layout="wide")
 st.title("Executive Portfolio")
-st.caption("更新・拡張・競合防衛の候補Accountを、価値、勝ち筋、データ信頼度で並べ替えます。")
+st.caption(
+    "Rank renewal, expansion, and competitive-defense accounts by value, win-fit, and data trust."
+)
 
 if not database_ready():
-    st.error("先にトップページでデモ環境を構築してください。")
+    st.error("Build the demo warehouse on the home page first.")
     st.stop()
 
 portfolio = read_df("SELECT * FROM account_positioning")
 
 st.info(
-    "ここでは全Accountを同じ優先度で扱わず、Expected value、Sales Play fit、"
-    "Forecastに使えるデータ品質を組み合わせて営業・CSの集中先を決めます。"
+    "Rather than treating every account alike, combine expected value, sales-play fit, and "
+    "forecast-grade data quality to decide where sales and CS should focus."
 )
 
 f1, f2, f3, f4 = st.columns(4)
@@ -60,20 +62,20 @@ if priority:
     filtered = filtered[filtered["priority_band"].isin(priority)]
 
 m1, m2, m3, m4 = st.columns(4)
-m1.metric("対象Accounts", f"{len(filtered):,}")
+m1.metric("Accounts in view", f"{len(filtered):,}")
 m2.metric("High priority", f"{(filtered['priority_band'] == 'High').sum():,}")
 m3.metric(
     "Expected value", format_jpy_mn(float(filtered["expected_commercial_value_jpy_mn"].sum()))
 )
 m4.metric(
-    "平均Data confidence",
+    "Avg data confidence",
     f"{filtered['data_confidence_pct'].mean():.1f}%" if len(filtered) else "-",
 )
 
 left, right = st.columns(2)
 with left:
-    st.subheader("Sales Play別Expected Value")
-    st.caption("どの提案テーマが商業価値を作っているかを確認します。")
+    st.subheader("Expected value by sales play")
+    st.caption("See which sales play is creating the commercial value.")
     by_play = (
         filtered.groupby("recommended_play", as_index=False)["expected_commercial_value_jpy_mn"]
         .sum()
@@ -93,7 +95,10 @@ with left:
     )
 with right:
     st.subheader("Priority × Governance")
-    st.caption("High priorityでもEvidence requiredなら、Commit前に照合タスクへ回します。")
+    st.caption(
+        "Even High-priority accounts flagged Evidence required go to a "
+        "reconciliation task before Commit."
+    )
     matrix = filtered.groupby(["priority_band", "governance_status"], as_index=False).size()
     st.plotly_chart(
         px.bar(
@@ -114,7 +119,8 @@ st.markdown(
     "subscription mix visible for renewal and expansion planning."
 )
 st.caption(
-    "グローバル地域、営業グループ、業種・業態で見たときに、どこへ支援と監査を寄せるべきかを見ます。"
+    "Where to concentrate support and audit, viewed by region, sales group, "
+    "and industry/business model."
 )
 coverage_left, coverage_right = st.columns(2)
 with coverage_left:
@@ -160,7 +166,9 @@ with coverage_right:
     )
 
 st.subheader("Top Account Playbook")
-st.caption("AEが次に見るべきAccountと、会話の入口になるNext Best Actionです。")
+st.caption(
+    "The accounts an AE should look at next, with the next best action to open the conversation."
+)
 columns = [
     "account_name",
     "industry",

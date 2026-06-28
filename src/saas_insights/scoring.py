@@ -229,7 +229,7 @@ def score_accounts(frame: pd.DataFrame, config: Mapping[str, Any]) -> pd.DataFra
     )
     df["forecast_recommendation"] = np.where(
         df["governance_status"] == "Forecast-ready",
-        "Scenario forecastに利用可。AEによる顧客状況確認を残す。",
-        "Commitから除外し、Upside/Riskとして管理。資産照合後に再評価。",
+        "Eligible for scenario forecasting; AE still to confirm account situation.",
+        "Exclude from Commit; manage as Upside/Risk and re-assess after reconciliation.",
     )
     return df

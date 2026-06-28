@@ -4,84 +4,87 @@
 
 ### accounts
 
-Account属性、Industry、Business model、Sales theater、Sales group、AE、Partner、
-Segment、AI投資時期、Security tool数などの営業コンテキスト。
+Account attributes and sales context: industry, business model, sales theater,
+sales group, AE, partner, segment, AI-investment horizon, security-tool count, etc.
 
 ### assets
 
-Subscription inventoryの最小粒度。Asset ID、Serial、Account、Site、Vendor、Product family、
-Portfolio domain、Deployment model、Commercial model、Lifecycle、Contract / Entitlement参照を持つ。
+The finest grain of the installed base. Asset ID, serial, account, site, vendor,
+product family, portfolio domain, deployment model, commercial model, lifecycle,
+and contract / entitlement references.
 
 ### contracts
 
-Vendor、Product family、Contract type、Start / End、Annual value、Adoption、Enterprise Plan eligibility。
+Vendor, product family, contract type, start/end, annual value, adoption, and
+Enterprise Plan eligibility.
 
 ### entitlements
 
-Assetに紐づく利用権、Support level、Consumption、End date。
+Usage rights tied to an asset: support level, consumption, end date.
 
 ### support_cases
 
-障害Severity、Open / Closed、Resolution hours。
+Incident severity, open/closed status, resolution hours.
 
 ### competitor_signals
 
-AE note、RFP、PoC、Price quote、Renewal delay等のAccount-level signal。
+Account-level signals such as AE notes, RFPs, PoCs, price quotes, and renewal delays.
 
 ### opportunities
 
-Sales Play、Competitor、Stage、Amount、Quote、Discount、Forecast category。
+Sales play, competitor, stage, amount, quote, discount, forecast category.
 
 ### gtm_monthly
 
-時間軸を持つGTMドライバーパネル（`Company` ロールアップ + Segment別、42ヶ月）。
-new / expansion / contraction / churn ARR、revenue、COGS、S&M / R&D / G&A、
-customers、ファネル（MQL/SQL/opportunities/won/lost）、pipeline、quota を月次で保持。
-`src/saas_insights/gtm.py` で決定論的に生成。
+Time-aware GTM driver panel (a `Company` roll-up plus per-segment rows, 42 months).
+Holds monthly new / expansion / contraction / churn ARR, revenue, COGS, S&M / R&D /
+G&A, customers, the funnel (MQL/SQL/opportunities/won/lost), pipeline, and quota.
+Generated deterministically in `src/saas_insights/gtm.py`.
 
 ## Core analytical tables
 
 ### asset_reconciliation
 
-主な列：
+Key columns:
 
 - `reconciliation_status`
 - `asset_data_confidence_pct`
 - `issue_count`
 - `issue_summary`
-- 各Issue flag
+- individual issue flags
 
 ### account_features
 
-Account単位の特徴量：
+Account-level features:
 
-- Subscription inventory / primary vendor share
-- Lifecycle transition / support gap / data throughput
-- Portfolio domain count / deployment model count
-- Physical or hybrid mix / software subscription mix
-- Renewal value / fragmentation / adoption
-- Incident pressure
-- Competitor pressure
-- Pipeline and quote variance
-- Data confidence
+- installed base / primary vendor share
+- lifecycle transition / support gap / data throughput
+- portfolio domain count / deployment model count
+- physical or hybrid mix / software subscription mix
+- renewal value / fragmentation / adoption
+- incident pressure
+- competitor pressure
+- pipeline and quote variance
+- data confidence
 
 ### gtm_monthly_metrics / gtm_company_monthly
 
-GTM経済性Mart（`compute_gtm_metrics` がドライバーから再構成）：
+GTM economics mart (reconstructed from drivers by `compute_gtm_metrics`):
 
 - ARR / net new ARR / YoY growth
-- NRR / GRR（TTM）
+- NRR / GRR (TTM)
 - gross margin / operating margin / Rule of 40
 - Magic Number / CAC / CAC payback / LTV / LTV·CAC / burn multiple
 - pipeline coverage / win rate / quota attainment
 
-`gtm_company_monthly` は Company ロールアップ、`gtm_segment_latest` は最新月のSegment別。
+`gtm_company_monthly` is the Company roll-up; `gtm_segment_latest` is the latest
+month by segment.
 
 ### account_positioning
 
-営業意思決定用Mart：
+Sales decision-support mart:
 
-- 各Sales Play score
+- per-sales-play score
 - `recommended_play`
 - `primary_competitor`
 - `priority_score` / `priority_band`

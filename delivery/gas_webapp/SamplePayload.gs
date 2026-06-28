@@ -186,7 +186,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 281.7,
       "data_confidence_pct": 86.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / WorkSuite Cloudの提案条件を証拠ベースで確認し、競合Workshopを設定"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Validate WorkSuite Cloud's proposal terms on the evidence; set a competitive workshop"
     },
     {
       "account_name": "Kanto Group 134",
@@ -196,7 +196,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 118.4,
       "data_confidence_pct": 90.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "180日以内更新のBase/Downside/Upsideを作成し、Ownerと期限を設定 / AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定"
+      "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Discovery on AI workload, data throughput and GPU timing; select a PoC target"
     },
     {
       "account_name": "Kanto Group 107",
@@ -206,7 +206,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 73.2,
       "data_confidence_pct": 89.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / WorkSuite Cloudの提案条件を証拠ベースで確認し、競合Workshopを設定"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Validate WorkSuite Cloud's proposal terms on the evidence; set a competitive workshop"
     },
     {
       "account_name": "Tohoku Services 205",
@@ -216,7 +216,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 82.8,
       "data_confidence_pct": 90.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / Platform Modernizationを並行Sales Playとして追加評価"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"
     },
     {
       "account_name": "Tohoku Network 109",
@@ -226,7 +226,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 67.6,
       "data_confidence_pct": 89.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "180日以内更新のBase/Downside/Upsideを作成し、Ownerと期限を設定 / AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / Open Platformの提案条件を証拠ベースで確認し、競合Workshopを設定"
+      "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Discovery on AI workload, data throughput and GPU timing; select a PoC target / Validate Open Platform's proposal terms on the evidence; set a competitive workshop"
     },
     {
       "account_name": "Hokkaido Holdings 150",
@@ -236,7 +236,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 37.3,
       "data_confidence_pct": 92.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "180日以内更新のBase/Downside/Upsideを作成し、Ownerと期限を設定 / AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定"
+      "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Discovery on AI workload, data throughput and GPU timing; select a PoC target"
     },
     {
       "account_name": "Kyushu Industries 051",
@@ -246,7 +246,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 249.8,
       "data_confidence_pct": 89.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "180日以内更新のBase/Downside/Upsideを作成し、Ownerと期限を設定 / 契約・更新月を集約し、現行契約対Enterprise Plan/複数年契約のシナリオを比較"
+      "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Consolidate contracts and renewal months; compare current contracts vs an Enterprise Plan / multi-year scenario"
     },
     {
       "account_name": "Setouchi Services 168",
@@ -256,7 +256,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 103.3,
       "data_confidence_pct": 86.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / Platform Modernizationを並行Sales Playとして追加評価"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"
     },
     {
       "account_name": "Kansai Group 140",
@@ -266,7 +266,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 54.4,
       "data_confidence_pct": 86.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "180日以内更新のBase/Downside/Upsideを作成し、Ownerと期限を設定 / 契約・更新月を集約し、現行契約対Enterprise Plan/複数年契約のシナリオを比較"
+      "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Consolidate contracts and renewal months; compare current contracts vs an Enterprise Plan / multi-year scenario"
     },
     {
       "account_name": "Kansai Solutions 230",
@@ -276,7 +276,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 55.8,
       "data_confidence_pct": 90.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target"
     },
     {
       "account_name": "Kansai Group 015",
@@ -286,7 +286,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 59.9,
       "data_confidence_pct": 91.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / Platform Modernizationを並行Sales Playとして追加評価"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"
     },
     {
       "account_name": "Kansai Industries 115",
@@ -296,7 +296,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 67.4,
       "data_confidence_pct": 91.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / Platform Modernizationを並行Sales Playとして追加評価"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"
     },
     {
       "account_name": "Hokkaido Services 129",
@@ -306,7 +306,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 37.8,
       "data_confidence_pct": 86.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "180日以内更新のBase/Downside/Upsideを作成し、Ownerと期限を設定 / AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / Platform Modernizationを並行Sales Playとして追加評価"
+      "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"
     },
     {
       "account_name": "Chubu Systems 101",
@@ -316,7 +316,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 61.6,
       "data_confidence_pct": 88.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target"
     },
     {
       "account_name": "Kyushu Industries 249",
@@ -326,7 +326,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 36.8,
       "data_confidence_pct": 86.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "180日以内更新のBase/Downside/Upsideを作成し、Ownerと期限を設定 / AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / Platform Modernizationを並行Sales Playとして追加評価"
+      "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"
     },
     {
       "account_name": "Kanto Solutions 250",
@@ -336,7 +336,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 27.8,
       "data_confidence_pct": 87.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "180日以内更新のBase/Downside/Upsideを作成し、Ownerと期限を設定 / AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / Open Platformの提案条件を証拠ベースで確認し、競合Workshopを設定"
+      "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Discovery on AI workload, data throughput and GPU timing; select a PoC target / Validate Open Platform's proposal terms on the evidence; set a competitive workshop"
     },
     {
       "account_name": "Hokkaido Solutions 146",
@@ -346,7 +346,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 49.2,
       "data_confidence_pct": 87.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target"
     },
     {
       "account_name": "Kanto Network 050",
@@ -356,7 +356,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 55.9,
       "data_confidence_pct": 89.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "180日以内更新のBase/Downside/Upsideを作成し、Ownerと期限を設定 / 契約・更新月を集約し、現行契約対Enterprise Plan/複数年契約のシナリオを比較"
+      "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Consolidate contracts and renewal months; compare current contracts vs an Enterprise Plan / multi-year scenario"
     },
     {
       "account_name": "Hokkaido Solutions 164",
@@ -366,7 +366,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 31.9,
       "data_confidence_pct": 81.0,
       "governance_status": "Evidence required",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / Platform Modernizationを並行Sales Playとして追加評価"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"
     },
     {
       "account_name": "Kanto Systems 198",
@@ -376,7 +376,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 29.5,
       "data_confidence_pct": 89.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / Platform Modernizationを並行Sales Playとして追加評価"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"
     },
     {
       "account_name": "Kyushu Solutions 066",
@@ -386,7 +386,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 62.0,
       "data_confidence_pct": 91.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / Platform Modernizationを並行Sales Playとして追加評価"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"
     },
     {
       "account_name": "Hokkaido Systems 122",
@@ -396,7 +396,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 42.6,
       "data_confidence_pct": 86.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定 / Platform Modernizationを並行Sales Playとして追加評価"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"
     },
     {
       "account_name": "Kansai Group 060",
@@ -406,7 +406,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 110.3,
       "data_confidence_pct": 93.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "180日以内更新のBase/Downside/Upsideを作成し、Ownerと期限を設定 / 契約・更新月を集約し、現行契約対Enterprise Plan/複数年契約のシナリオを比較 / Platform Modernizationを並行Sales Playとして追加評価"
+      "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Consolidate contracts and renewal months; compare current contracts vs an Enterprise Plan / multi-year scenario / Evaluate Platform Modernization as a parallel sales play"
     },
     {
       "account_name": "Setouchi Holdings 081",
@@ -416,7 +416,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 81.2,
       "data_confidence_pct": 90.0,
       "governance_status": "Forecast-ready",
-      "next_best_action": "180日以内更新のBase/Downside/Upsideを作成し、Ownerと期限を設定 / 契約・更新月を集約し、現行契約対Enterprise Plan/複数年契約のシナリオを比較 / ShieldOps Cloudの提案条件を証拠ベースで確認し、競合Workshopを設定 / Platform Modernizationを並行Sales Playとして追加評価"
+      "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Consolidate contracts and renewal months; compare current contracts vs an Enterprise Plan / multi-year scenario / Validate ShieldOps Cloud's proposal terms on the evidence; set a competitive workshop / Evaluate Platform Modernization as a parallel sales play"
     },
     {
       "account_name": "Tohoku Network 208",
@@ -426,7 +426,7 @@ const SAMPLE_PAYLOAD = {
       "expected_value_jpy_mn": 103.7,
       "data_confidence_pct": 84.0,
       "governance_status": "Evidence required",
-      "next_best_action": "AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定"
+      "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target"
     }
   ]
 };

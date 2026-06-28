@@ -14,16 +14,19 @@ from saas_insights.ui import database_ready, read_df  # noqa: E402
 
 st.set_page_config(page_title="Competitive Positioning", page_icon="⚔️", layout="wide")
 st.title("Competitive Positioning")
-st.caption("競合圧力が高いAccountを、勝ち筋の強さと商業価値で分離します。")
+st.caption(
+    "Separate accounts under high competitive pressure by win-fit strength and commercial value."
+)
 
 if not database_ready():
-    st.error("先にトップページでデモ環境を構築してください。")
+    st.error("Build the demo warehouse on the home page first.")
     st.stop()
 
 frame = read_df("SELECT * FROM account_positioning")
 st.info(
-    "右上に近いAccountは、提案Fitが高い一方で競合圧力も強い領域です。"
-    "早めに価値仮説と証拠を揃え、価格比較だけに持ち込まれないようにします。"
+    "Accounts toward the top-right have high sales-play fit but also high competitive pressure. "
+    "Line up the value hypothesis and evidence early so the deal isn't reduced "
+    "to a price comparison."
 )
 f1, f2, f3, f4 = st.columns(4)
 play = f1.selectbox("Sales Play", ["All"] + sorted(frame["recommended_play"].unique().tolist()))
@@ -82,12 +85,12 @@ fig.add_vline(x=70, line_dash="dash")
 fig.add_hline(y=70, line_dash="dash")
 st.plotly_chart(fig, use_container_width=True)
 st.caption(
-    "右上：高Fit・高競争圧力＝Defend/Accelerate。"
-    "右下：Proactive expansion。左上：選別または別ポジショニング。"
+    "Top-right: high fit + high pressure = Defend/Accelerate. "
+    "Bottom-right: proactive expansion. Top-left: qualify out or re-position."
 )
 
 st.subheader("Account-level positioning")
-st.caption("各Accountで、競合比較の論点と次アクションを確認します。")
+st.caption("Per account, review the competitive talking points and the next action.")
 columns = [
     "account_name",
     "industry",
@@ -112,7 +115,7 @@ st.dataframe(
 )
 
 st.subheader("Competitor exposure")
-st.caption("Sales Playごとに、どの競合テーマがExpected valueを押し下げる可能性があるかを見ます。")
+st.caption("By sales play, see which competitor themes may be pulling expected value down.")
 exposure = (
     filtered.groupby(["recommended_play", "primary_competitor"], as_index=False)
     .agg(
