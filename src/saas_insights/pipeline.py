@@ -7,7 +7,7 @@ import pandas as pd
 from .config import Paths, get_paths, load_scoring_config
 from .data_generator import generate_dataset
 from .db import connect, execute_sql_files, load_raw_tables, table_exists
-from .gtm import compute_gtm_metrics
+from .gtm import compute_gtm_metrics, generate_gtm_monthly
 from .scoring import score_accounts
 
 
@@ -15,6 +15,12 @@ def build_warehouse(paths: Paths | None = None) -> Path:
     project_paths = paths or get_paths()
     project_paths.warehouse.mkdir(parents=True, exist_ok=True)
     config = load_scoring_config(project_paths.scoring_config)
+
+    # The GTM panel is independent synthetic data; regenerate it deterministically
+    # if a raw directory predates this feature so `build` keeps working.
+    gtm_csv = project_paths.raw / "gtm_monthly.csv"
+    if not gtm_csv.exists() and (project_paths.raw / "accounts.csv").exists():
+        generate_gtm_monthly().to_csv(gtm_csv, index=False)
 
     with connect(project_paths.database) as connection:
         load_raw_tables(connection, project_paths)

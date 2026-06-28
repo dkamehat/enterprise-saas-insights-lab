@@ -16,8 +16,11 @@ Outputs (synthetic data only):
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
+
+import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
@@ -26,6 +29,27 @@ if str(ROOT / "src") not in sys.path:
 from saas_insights.db import query_df  # noqa: E402
 
 OUT = ROOT / "delivery" / "gas_webapp"
+
+
+def _clean(obj):
+    """Recursively replace NaN/inf floats with None so the payload is valid JSON."""
+    if isinstance(obj, dict):
+        return {k: _clean(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_clean(v) for v in obj]
+    if isinstance(obj, float) and not math.isfinite(obj):
+        return None
+    return obj
+
+
+def _json_for_html(payload: dict) -> str:
+    """JSON safe to inline inside a <script> tag (no </script> break-out, no XSS)."""
+    return (
+        json.dumps(payload, ensure_ascii=False)
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+    )
 
 
 def _series(frame) -> dict:
@@ -47,6 +71,7 @@ def build_payload() -> dict:
         """
     )
     latest = company.iloc[-1]
+    as_of_month = pd.to_datetime(latest["month"]).date().isoformat()
     segments = query_df(
         """
         SELECT segment, ending_arr_jpy_mn, arr_growth_yoy_pct, nrr_ttm_pct, grr_ttm_pct,
@@ -67,7 +92,7 @@ def build_payload() -> dict:
         """
     )
     return {
-        "as_of_month": str(latest["month"]),
+        "as_of_month": as_of_month,
         "kpis": {
             "arr_jpy_mn": round(float(latest["ending_arr_jpy_mn"]), 1),
             "growth_yoy_pct": float(latest["arr_growth_yoy_pct"]),
@@ -153,6 +178,8 @@ HTML_TEMPLATE = """<!doctype html>
 <script>
 const DATA = __DATA__;
 const yen = v => "¥" + Number(v).toLocaleString(undefined,{maximumFractionDigits:0}) + "M";
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 document.getElementById("asof").textContent = DATA.as_of_month;
 
 const k = DATA.kpis;
@@ -236,7 +263,7 @@ try {
 
 const segBody = document.querySelector("#segTable tbody");
 segBody.innerHTML = DATA.segments.map(s => `<tr>
-  <td>${s.segment}</td><td>${yen(s.ending_arr_jpy_mn)}</td>
+  <td>${esc(s.segment)}</td><td>${yen(s.ending_arr_jpy_mn)}</td>
   <td>${s.arr_growth_yoy_pct.toFixed(0)}%</td><td>${s.nrr_ttm_pct.toFixed(0)}%</td>
   <td>${s.grr_ttm_pct.toFixed(0)}%</td><td>${s.magic_number.toFixed(2)}</td>
   <td>${s.cac_payback_months.toFixed(0)} mo</td><td>${s.ltv_to_cac.toFixed(1)}x</td>
@@ -244,10 +271,10 @@ segBody.innerHTML = DATA.segments.map(s => `<tr>
 
 const acctBody = document.querySelector("#acctTable tbody");
 acctBody.innerHTML = DATA.priority_accounts.map(a => `<tr>
-  <td>${a.account_name}</td><td>${a.segment}</td>
-  <td><span class="pill">${a.recommended_play}</span></td>
+  <td>${esc(a.account_name)}</td><td>${esc(a.segment)}</td>
+  <td><span class="pill">${esc(a.recommended_play)}</span></td>
   <td>${yen(a.expected_value_jpy_mn)}</td><td>${a.data_confidence_pct}%</td>
-  <td>${a.governance_status}</td><td>${a.next_best_action}</td></tr>`).join("");
+  <td>${esc(a.governance_status)}</td><td>${esc(a.next_best_action)}</td></tr>`).join("");
 </script>
 </body>
 </html>
@@ -256,9 +283,9 @@ acctBody.innerHTML = DATA.priority_accounts.map(a => `<tr>
 
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
-    payload = build_payload()
+    payload = _clean(build_payload())
     (OUT / "data.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2), "utf-8")
-    html = HTML_TEMPLATE.replace("__DATA__", json.dumps(payload, ensure_ascii=False))
+    html = HTML_TEMPLATE.replace("__DATA__", _json_for_html(payload))
     (OUT / "dashboard.html").write_text(html, "utf-8")
 
     # Synthetic fallback for the Apps Script web app (used when GCP_PROJECT is unset).

@@ -35,6 +35,8 @@
 </main>
 <script>
   function yen(v){ return "¥" + Number(v).toLocaleString() + "M"; }
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g,
+    function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
   function render(d){
     var k = d.kpis;
     var cards = [["ARR", yen(k.arr_jpy_mn)], ["Growth YoY", k.growth_yoy_pct.toFixed(0)+"%"],
@@ -46,9 +48,9 @@
     }).join("");
     var tb = document.querySelector("#acct tbody");
     tb.innerHTML = d.priority_accounts.map(function(a){
-      return "<tr><td>"+a.account_name+"</td><td>"+a.recommended_play+"</td><td>"+
+      return "<tr><td>"+esc(a.account_name)+"</td><td>"+esc(a.recommended_play)+"</td><td>"+
         yen(a.expected_commercial_value_jpy_mn || a.expected_value_jpy_mn)+"</td><td>"+
-        a.governance_status+"</td><td>"+a.next_best_action+"</td></tr>";
+        esc(a.governance_status)+"</td><td>"+esc(a.next_best_action)+"</td></tr>";
     }).join("");
     drawArr(d.arr_series);
   }

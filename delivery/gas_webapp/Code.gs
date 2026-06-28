@@ -73,12 +73,15 @@ function getData() {
 /** Run a Standard SQL query and return an array of plain row objects. */
 function bigQuery_(project, sql) {
   const result = BigQuery.Jobs.query({ query: sql, useLegacySql: false }, project);
-  const fields = result.schema.fields.map(function (f) { return f.name; });
+  // Coerce by the column's declared type, not a string heuristic, so all-digit
+  // identifiers (zero-padded codes, etc.) are never silently turned into numbers.
+  const numeric = { INTEGER: 1, INT64: 1, FLOAT: 1, FLOAT64: 1, NUMERIC: 1, BIGNUMERIC: 1 };
+  const fields = result.schema.fields;
   return (result.rows || []).map(function (row) {
     const obj = {};
     row.f.forEach(function (cell, i) {
       const v = cell.v;
-      obj[fields[i]] = (v !== null && v !== '' && !isNaN(v)) ? Number(v) : v;
+      obj[fields[i].name] = (v !== null && numeric[fields[i].type]) ? Number(v) : v;
     });
     return obj;
   });

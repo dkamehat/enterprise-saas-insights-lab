@@ -222,6 +222,16 @@ def _trailing_sum(series: pd.Series, window: int = 12) -> pd.Series:
     return series.rolling(window, min_periods=window).sum()
 
 
+def _safe_div(numerator: pd.Series, denominator: pd.Series) -> pd.Series:
+    """Divide element-wise, returning NaN (never ``inf``) where the denominator is 0.
+
+    The synthetic panel never hits a zero denominator, but guarding keeps the
+    metrics well-defined for thin segments or down quarters (no closed deals, no
+    prior-quarter spend, a segment that started from zero ARR).
+    """
+    return numerator / denominator.where(denominator != 0)
+
+
 def _metrics_for_group(group: pd.DataFrame) -> pd.DataFrame:
     g = group.sort_values("month").reset_index(drop=True)
     arr = g["ending_arr_jpy_mn"]
@@ -234,24 +244,24 @@ def _metrics_for_group(group: pd.DataFrame) -> pd.DataFrame:
         - g["churned_arr_jpy_mn"]
     )
     g["net_new_arr_jpy_mn"] = net_new_arr.round(2)
-    g["arr_growth_yoy_pct"] = ((arr / base_12m - 1.0) * 100.0).round(1)
+    g["arr_growth_yoy_pct"] = ((_safe_div(arr, base_12m) - 1.0) * 100.0).round(1)
 
     expansion_ttm = _trailing_sum(g["expansion_arr_jpy_mn"])
     contraction_ttm = _trailing_sum(g["contraction_arr_jpy_mn"])
     churn_ttm = _trailing_sum(g["churned_arr_jpy_mn"])
     g["nrr_ttm_pct"] = (
-        (base_12m + expansion_ttm - contraction_ttm - churn_ttm) / base_12m * 100.0
+        _safe_div(base_12m + expansion_ttm - contraction_ttm - churn_ttm, base_12m) * 100.0
     ).round(1)
     g["grr_ttm_pct"] = (
-        (base_12m - contraction_ttm - churn_ttm) / base_12m * 100.0
+        _safe_div(base_12m - contraction_ttm - churn_ttm, base_12m) * 100.0
     ).round(1)
 
     revenue_ttm = _trailing_sum(g["revenue_jpy_mn"])
     g["gross_margin_pct"] = (
-        (g["revenue_jpy_mn"] - g["cogs_jpy_mn"]) / g["revenue_jpy_mn"] * 100.0
+        _safe_div(g["revenue_jpy_mn"] - g["cogs_jpy_mn"], g["revenue_jpy_mn"]) * 100.0
     ).round(1)
     g["operating_margin_ttm_pct"] = (
-        _trailing_sum(g["operating_income_jpy_mn"]) / revenue_ttm * 100.0
+        _safe_div(_trailing_sum(g["operating_income_jpy_mn"]), revenue_ttm) * 100.0
     ).round(1)
     g["rule_of_40_pct"] = (g["arr_growth_yoy_pct"] + g["operating_margin_ttm_pct"]).round(1)
 
@@ -262,45 +272,44 @@ def _metrics_for_group(group: pd.DataFrame) -> pd.DataFrame:
         + g["sales_marketing_spend_jpy_mn"].shift(4)
         + g["sales_marketing_spend_jpy_mn"].shift(5)
     )
-    g["magic_number"] = (net_new_q / sm_prev_q).round(2)
+    g["magic_number"] = _safe_div(net_new_q, sm_prev_q).round(2)
 
     # CAC and payback on a trailing-3-month basis for stability.
     sm_ttq = _trailing_sum(g["sales_marketing_spend_jpy_mn"], 3)
     new_cust_ttq = _trailing_sum(g["new_customers"], 3)
     new_arr_ttq = _trailing_sum(g["new_arr_jpy_mn"], 3)
-    cac = sm_ttq / new_cust_ttq
-    new_arr_per_customer = new_arr_ttq / new_cust_ttq
+    cac = _safe_div(sm_ttq, new_cust_ttq)
+    new_arr_per_customer = _safe_div(new_arr_ttq, new_cust_ttq)
     gm_frac = g["gross_margin_pct"] / 100.0
     g["cac_jpy_mn"] = cac.round(2)
     g["cac_payback_months"] = (
-        cac / (new_arr_per_customer * gm_frac) * 12.0
+        _safe_div(cac, new_arr_per_customer * gm_frac) * 12.0
     ).round(1)
 
-    # LTV uses installed-base ARR per customer, gross margin, and the TTM gross
-    # revenue churn rate (contraction + churn against the base 12 months ago),
-    # i.e. (1 - GRR). This is more conservative than a logo-churn LTV and keeps
-    # LTV / CAC in a defensible range.
-    gross_rev_churn_rate = (
-        (contraction_ttm + churn_ttm) / base_12m
-    ).clip(lower=0.02)
+    # LTV is the new-logo lifetime value: new-business ARR per acquired customer
+    # (new_arr_per_customer) x gross margin, divided by the company gross *revenue*
+    # churn rate (contraction + churn vs the base 12 months ago, i.e. 1 - GRR),
+    # floored at 2% so very low churn cannot inflate LTV. Pairing new-logo ARR with
+    # new-logo CAC keeps LTV / CAC self-consistent and in a defensible range; the
+    # company-level churn rate is used as the retention assumption for the cohort.
+    gross_rev_churn_rate = _safe_div(contraction_ttm + churn_ttm, base_12m).clip(lower=0.02)
     g["ltv_jpy_mn"] = (new_arr_per_customer * gm_frac / gross_rev_churn_rate).round(1)
-    g["ltv_to_cac"] = (g["ltv_jpy_mn"] / g["cac_jpy_mn"]).round(2)
+    g["ltv_to_cac"] = _safe_div(g["ltv_jpy_mn"], g["cac_jpy_mn"]).round(2)
 
     # Burn multiple: net cash burned / net new ARR (trailing twelve months).
     burn_ttm = _trailing_sum(g["cash_burn_jpy_mn"])
     net_new_ttm = _trailing_sum(g["net_new_arr_jpy_mn"])
-    g["burn_multiple"] = (burn_ttm / net_new_ttm).round(2)
+    g["burn_multiple"] = _safe_div(burn_ttm, net_new_ttm).round(2)
 
-    g["pipeline_coverage_x"] = (
-        g["open_pipeline_arr_jpy_mn"] / g["quarter_target_arr_jpy_mn"]
+    g["pipeline_coverage_x"] = _safe_div(
+        g["open_pipeline_arr_jpy_mn"], g["quarter_target_arr_jpy_mn"]
     ).round(2)
     g["win_rate_pct"] = (
-        g["opportunities_won"]
-        / (g["opportunities_won"] + g["opportunities_lost"])
+        _safe_div(g["opportunities_won"], g["opportunities_won"] + g["opportunities_lost"])
         * 100.0
     ).round(1)
     g["quota_attainment_pct"] = (
-        net_new_arr / g["quarter_target_arr_jpy_mn"] * 3.0 * 100.0
+        _safe_div(net_new_arr, g["quarter_target_arr_jpy_mn"]) * 3.0 * 100.0
     ).round(1)
     return g
 
