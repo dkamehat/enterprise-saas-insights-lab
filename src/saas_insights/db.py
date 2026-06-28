@@ -18,6 +18,7 @@ RAW_TABLES = [
     "opportunities",
     "product_events",
     "planted_quality_signals",
+    "gtm_monthly",
     "dataset_meta",
 ]
 

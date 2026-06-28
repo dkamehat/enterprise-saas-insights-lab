@@ -20,80 +20,94 @@ def positioning_angle(play: str, competitor: str, row: Mapping[str, Any]) -> str
     if play == "Platform Modernization":
         if competitor == "WorkSuite Cloud":
             return (
-                "単価比較に閉じず、既存業務フローとの連続性、移行・教育・二重運用を含む3年TCO、"
-                "Security/Observability統合後の運用負荷まで並べて評価する。"
+                "Compete beyond unit price: weigh continuity with existing workflows, a "
+                "3-year TCO that includes migration, training and dual-running, and the "
+                "operating load after Security/Observability consolidation."
             )
         if competitor == "ServiceOps Cloud":
             return (
-                "機能表だけで競わず、Core PlatformからData Platformまでの運用標準化、"
-                "既存契約・権利・利用率、可視性とガバナンスを含む運用モデルで比較する。"
+                "Don't compete on a feature grid: compare the operating model — "
+                "standardization from Core to Data Platform, existing contracts, "
+                "entitlements and utilization, plus visibility and governance."
             )
         if competitor == "Regional Suite":
             return (
-                "価格以外に、サポート継続性、セキュリティ統制、"
-                "契約移管・運用リスクを定量化する。"
+                "Beyond price, quantify support continuity, security control, and the "
+                "cost and risk of contract migration and operations."
             )
         return (
-            "更新延期のコストを可視化する。ライフサイクル移行、障害期待損失、保守切れ、"
-            "将来の一括刷新コストを現状維持シナリオと比較する。"
+            "Make the cost of deferring renewal visible: compare lifecycle migration, "
+            "expected incident loss, end-of-support, and future big-bang refresh cost "
+            "against the status-quo scenario."
         )
 
     if play == "Security Platform":
         if competitor == "SecureEdge Cloud":
             return (
-                "機能数ではなく、Platform・Identity・Security・Log AnalyticsのTelemetry統合、"
-                "運用コンソール削減、SOC工数と契約集約効果で比較する。"
+                "Not feature count, but telemetry consolidation across Platform, Identity, "
+                "Security and Log Analytics — fewer operating consoles, lower SOC effort, "
+                "and contract-consolidation savings."
             )
         if competitor == "ShieldOps Cloud":
             return (
-                "初期価格だけでなく、Enterprise Governance、既存Platformとの統合、"
-                "ライフサイクル運用、権限管理、3年TCOで比較する。"
+                "Beyond entry price, compare enterprise governance, integration with the "
+                "existing platform, lifecycle operations, access management, and 3-year TCO."
             )
         if competitor == "ZeroTrust Cloud":
             return (
-                "SSE単体の比較ではなく、Core Platform・Data Platformを含むHybrid環境の可視性、"
-                "Identity連携、運用責任範囲を明確にする。"
+                "Not an SSE-only comparison: clarify visibility across the hybrid estate "
+                "(Core and Data Platform), identity integration, and the split of "
+                "operational responsibility."
             )
         if competitor == "Endpoint Cloud":
             return (
-                "Endpoint単体ではなく、Platform、Identity、Detection/Response、"
-                "Log Analyticsを横断した"
-                "検知から復旧までの運用時間で比較する。"
+                "Not endpoint alone, but detection-to-recovery operating time across "
+                "Platform, Identity, Detection/Response, and Log Analytics."
             )
-        return "ツール乱立、未使用ライセンス、SOC工数、検知・復旧時間を現状維持コストとして示す。"
+        return (
+            "Frame tool sprawl, unused licenses, SOC effort, and detect-to-recover time "
+            "as the cost of the status quo."
+        )
 
     if play == "AI Data Platform":
         if competitor == "DataOps Cloud":
             return (
-                "AI基盤の性能だけでなく、既存Core Platform/Data Platformとの接続、Security、"
-                "Observability、運用スキル、段階移行を含むJob-to-operations全体で比較する。"
+                "Not just AI-platform performance, but the whole job-to-operations: "
+                "connectivity with existing Core/Data Platform, security, observability, "
+                "operating skills, and a phased migration."
             )
         if competitor == "GPU Cloud Partner":
             return (
-                "GPU統合の強みを認めた上で、異種環境、既存データ連携、セキュリティ、"
-                "運用標準化を含む全体アーキテクチャで役割分担を設計する。"
+                "Acknowledge the GPU-integration strength, then design role split across "
+                "the full architecture — heterogeneous environments, existing data "
+                "integration, security, and standardized operations."
             )
         if competitor == "Open Platform":
             return (
-                "利用料だけではなく、自社運用開発、障害対応、ライフサイクル、サポート、"
-                "人材確保を含む総保有コストで比較する。"
+                "Not usage fees alone, but total cost of ownership including in-house "
+                "operations, incident response, lifecycle, support, and staffing."
             )
-        return "AI投資延期によるボトルネックと、既存Data Platformの段階的拡張案を比較する。"
+        return (
+            "Compare the bottleneck of deferring AI investment against a phased expansion "
+            "of the existing Data Platform."
+        )
 
     if play == "Renewal / Enterprise Plan":
         if competitor == "No Decision":
             return (
-                "契約更新を事務処理として扱わず、失効・保守切れ・分散更新・追加調達の工数を"
-                "一本化前後で比較する。"
+                "Treat renewal as more than paperwork: compare the effort of lapses, "
+                "end-of-support, fragmented renewals, and ad-hoc procurement before vs "
+                "after consolidation."
             )
         return (
-            f"{competitor}への切替価格だけでなく、資産照合、契約移行、未使用権利、"
-            f"サポート継続性を含む商業ベースラインで比較する。"
+            f"Not just the switching price to {competitor}, but a commercial baseline "
+            "that includes asset reconciliation, contract migration, unused entitlements, "
+            "and support continuity."
         )
 
     return (
-        f"主力SaaSベンダー比率{primary_share:.0f}%の既存環境を前提に、"
-        "顧客成果と総保有コストで比較する。"
+        f"Given an installed base with {primary_share:.0f}% primary-SaaS-vendor platform "
+        "share, compare on customer outcomes and total cost of ownership."
     )
 
 
@@ -106,29 +120,48 @@ def next_best_action(play: str, competitor: str, row: Mapping[str, Any]) -> str:
 
     actions: list[str] = []
     if confidence < 65 or unknown >= 15:
-        actions.append("Unknown資産をAE・Partner・契約担当で照合し、Forecast対象と保留を分離")
+        actions.append(
+            "Reconcile Unknown assets with AE / Partner / contract owner; "
+            "split forecastable from on-hold"
+        )
     if renewal_value > 0:
-        actions.append("180日以内更新のBase/Downside/Upsideを作成し、Ownerと期限を設定")
+        actions.append(
+            "Build Base/Downside/Upside for renewals within 180 days; set owner and date"
+        )
     if play == "Platform Modernization":
-        actions.append("ライフサイクル移行対象を業務重要度で優先付けし、3年TCOと段階導入案を提示")
+        actions.append(
+            "Prioritize lifecycle-migration targets by business criticality; present "
+            "3-year TCO and a phased rollout"
+        )
     elif play == "Security Platform":
-        actions.append("Security製品・更新日・利用率を棚卸しし、統合前後のSOC工数を比較")
+        actions.append(
+            "Inventory security products, renewal dates and utilization; compare SOC "
+            "effort before vs after consolidation"
+        )
     elif play == "AI Data Platform":
-        actions.append("AI workload、データ処理容量、GPU導入時期をDiscoveryし、PoC対象を選定")
+        actions.append(
+            "Discovery on AI workload, data throughput and GPU timing; select a PoC target"
+        )
     elif play == "Renewal / Enterprise Plan":
-        actions.append("契約・更新月を集約し、現行契約対Enterprise Plan/複数年契約のシナリオを比較")
+        actions.append(
+            "Consolidate contracts and renewal months; compare current contracts vs an "
+            "Enterprise Plan / multi-year scenario"
+        )
     if pressure >= 70 and competitor != "No Decision":
-        actions.append(f"{competitor}の提案条件を証拠ベースで確認し、競合Workshopを設定")
+        actions.append(
+            f"Validate {competitor}'s proposal terms on the evidence; set a competitive workshop"
+        )
     if eol >= 40 and play != "Platform Modernization":
-        actions.append("Platform Modernizationを並行Sales Playとして追加評価")
+        actions.append("Evaluate Platform Modernization as a parallel sales play")
     return " / ".join(actions[:4])
 
 
 def data_story(play: str, competitor: str, row: Mapping[str, Any]) -> str:
     return (
-        f"推奨は「{play}」。18か月以内の刷新対象は{_n(row.get('eol_18m_pct')):.1f}%、"
-        f"主力SaaSベンダーのPlatform比率は{_n(row.get('primary_platform_share_pct')):.1f}%、"
-        f"180日以内更新額は{_n(row.get('renewal_value_180d_jpy_mn')):.1f}百万円、"
-        f"データ信頼度は{_n(row.get('data_confidence_pct')):.1f}%です。"
-        f"主要競合は{competitor}であり、{positioning_angle(play, competitor, row)}"
+        f"Recommended play: \"{play}\". Refresh candidates within 18 months are "
+        f"{_n(row.get('eol_18m_pct')):.1f}%, primary-SaaS-vendor platform share is "
+        f"{_n(row.get('primary_platform_share_pct')):.1f}%, renewal value within 180 days "
+        f"is JPY {_n(row.get('renewal_value_180d_jpy_mn')):.1f}M, and data confidence is "
+        f"{_n(row.get('data_confidence_pct')):.1f}%. The primary competitor is {competitor}; "
+        f"{positioning_angle(play, competitor, row)}"
     )

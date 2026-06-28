@@ -5,11 +5,15 @@ Build an explainable commercial analytics environment for enterprise SaaS portfo
 
 ## Architecture
 - `src/saas_insights/data_generator.py`: deterministic synthetic source data.
-- `sql/`: transformations from raw records to account-level commercial features.
+- `src/saas_insights/gtm.py`: time-aware GTM panel + SaaS efficiency metrics
+  (ARR/NRR/GRR, Rule of 40, Magic Number, CAC payback, LTV/CAC) from monthly drivers.
+- `sql/`: transformations from raw records to account-level + GTM marts.
 - `src/saas_insights/scoring.py`: transparent play scoring and score drivers.
 - `src/saas_insights/recommendations.py`: positioning and next-best-action rules.
 - `src/saas_insights/tco.py`: adjustable scenario model.
-- `pages/`: Streamlit decision-support views.
+- `pages/`: Streamlit decision-support views (incl. GTM Economics).
+- `delivery/`: secondary surfaces (Looker LookML, Apps Script web app, AppSheet)
+  reading the same marts — keep metric definitions single-sourced in the warehouse.
 - `config/scoring.toml`: business-owned weights and thresholds.
 
 ## Required workflow

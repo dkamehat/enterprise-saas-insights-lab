@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GTM Ops Dashboard (synthetic)</title>
+<style>
+  :root { --ink:#1f2933; --muted:#7b8794; --line:#e4e7eb; --accent:#2f6df6; --good:#0a7d4b; }
+  * { box-sizing:border-box; }
+  body { font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    margin:0; color:var(--ink); background:#f7f8fa; }
+  header { padding:20px 28px; background:#fff; border-bottom:1px solid var(--line); }
+  h1 { font-size:20px; margin:0; }
+  .sub { color:var(--muted); font-size:13px; margin-top:4px; }
+  main { padding:24px 28px; max-width:1180px; margin:0 auto; }
+  .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .card .label { color:var(--muted); font-size:12px; }
+  .card .value { font-size:24px; font-weight:600; margin-top:4px; }
+  .card .bench { font-size:11px; margin-top:4px; }
+  .ok { color:var(--good); } .warn { color:#b54708; }
+  .panel { background:#fff; border:1px solid var(--line); border-radius:10px;
+    padding:16px; margin-top:18px; }
+  .panel h2 { font-size:15px; margin:0 0 10px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-weight:600; }
+  .pill { padding:2px 8px; border-radius:999px; font-size:11px; background:#eef2ff; color:#3730a3; }
+  .muted { color:var(--muted); font-size:12px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:780px) { .cards,.grid2 { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>GTM Operations Dashboard <span class="muted">— synthetic demo</span></h1>
+  <div class="sub">One unified backbone, delivered to ops as a lightweight web app ·
+    as of <span id="asof"></span></div>
+</header>
+<main>
+  <div class="cards" id="cards"></div>
+  <div class="grid2">
+    <div class="panel"><h2>ARR &amp; YoY growth</h2><canvas id="arrChart" height="220"></canvas></div>
+    <div class="panel"><h2>Net revenue retention (TTM)</h2><canvas id="nrrChart" height="220"></canvas></div>
+  </div>
+  <div class="panel">
+    <h2>Segment economics (latest)</h2>
+    <table id="segTable"><thead><tr>
+      <th>Segment</th><th>ARR</th><th>Growth</th><th>NRR</th><th>GRR</th>
+      <th>Magic #</th><th>CAC payback</th><th>LTV/CAC</th><th>Win rate</th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+  <div class="panel">
+    <h2>High-priority accounts — next best action</h2>
+    <table id="acctTable"><thead><tr>
+      <th>Account</th><th>Segment</th><th>Play</th><th>Expected value</th>
+      <th>Data conf.</th><th>Status</th><th>Next best action</th>
+    </tr></thead><tbody></tbody></table>
+    <p class="muted">Governance: accounts flagged "Evidence required" stay out of Commit
+      until the data baseline is reconciled.</p>
+  </div>
+  <p class="muted">Synthetic data. This page mirrors the Apps Script web app in
+    <code>delivery/gas_webapp/</code> that, in production, reads the same BigQuery marts.</p>
+</main>
+<script>
+const DATA = {"as_of_month": "2026-06-01", "kpis": {"arr_jpy_mn": 12073.8, "growth_yoy_pct": 47.2, "nrr_ttm_pct": 114.4, "grr_ttm_pct": 87.6, "rule_of_40_pct": 58.2, "magic_number": 1.3, "cac_payback_months": 17.9, "ltv_to_cac": 5.43}, "arr_series": {"months": ["2024-01-01", "2024-02-01", "2024-03-01", "2024-04-01", "2024-05-01", "2024-06-01", "2024-07-01", "2024-08-01", "2024-09-01", "2024-10-01", "2024-11-01", "2024-12-01", "2025-01-01", "2025-02-01", "2025-03-01", "2025-04-01", "2025-05-01", "2025-06-01", "2025-07-01", "2025-08-01", "2025-09-01", "2025-10-01", "2025-11-01", "2025-12-01", "2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01", "2026-05-01", "2026-06-01"], "arr": [5102.2, 5238.3, 5375.4, 5513.8, 5651.6, 5796.2, 5944.9, 6112.1, 6283.6, 6445.8, 6617.6, 6810.9, 7019.9, 7232.7, 7471.9, 7706.3, 7948.8, 8204.2, 8435.6, 8712.0, 8992.2, 9285.5, 9572.9, 9890.9, 10203.9, 10574.2, 10926.6, 11304.6, 11671.3, 12073.8], "growth": [30.7, 31.2, 31.7, 32.6, 32.9, 33.3, 33.8, 34.8, 35.4, 35.9, 36.3, 37.1, 37.6, 38.1, 39.0, 39.8, 40.6, 41.5, 41.9, 42.5, 43.1, 44.1, 44.7, 45.2, 45.4, 46.2, 46.2, 46.7, 46.8, 47.2], "nrr": [104.4, 104.7, 105.1, 105.5, 105.8, 106.0, 106.3, 106.9, 107.2, 107.5, 107.8, 108.2, 108.6, 108.9, 109.4, 109.8, 110.3, 110.8, 111.0, 111.4, 111.7, 112.2, 112.6, 112.9, 113.0, 113.5, 113.6, 114.0, 114.1, 114.4]}, "segments": [{"segment": "Enterprise", "ending_arr_jpy_mn": 7358.63, "arr_growth_yoy_pct": 49.0, "nrr_ttm_pct": 117.5, "grr_ttm_pct": 88.7, "magic_number": 1.33, "cac_payback_months": 18.8, "ltv_to_cac": 5.65, "win_rate_pct": 26.8}, {"segment": "Commercial", "ending_arr_jpy_mn": 3733.93, "arr_growth_yoy_pct": 51.2, "nrr_ttm_pct": 110.6, "grr_ttm_pct": 83.7, "magic_number": 1.4, "cac_payback_months": 14.7, "ltv_to_cac": 5.01, "win_rate_pct": 22.7}, {"segment": "Public Sector", "ending_arr_jpy_mn": 981.19, "arr_growth_yoy_pct": 23.5, "nrr_ttm_pct": 106.7, "grr_ttm_pct": 93.1, "magic_number": 0.7, "cac_payback_months": 31.1, "ltv_to_cac": 5.6, "win_rate_pct": 34.5}], "priority_accounts": [{"account_name": "Chubu Holdings 242", "segment": "Commercial", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 281.7, "data_confidence_pct": 86.0, "governance_status": "Forecast-ready", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Validate WorkSuite Cloud's proposal terms on the evidence; set a competitive workshop"}, {"account_name": "Kanto Group 134", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 118.4, "data_confidence_pct": 90.0, "governance_status": "Forecast-ready", "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Discovery on AI workload, data throughput and GPU timing; select a PoC target"}, {"account_name": "Kanto Group 107", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 73.2, "data_confidence_pct": 89.0, "governance_status": "Forecast-ready", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Validate WorkSuite Cloud's proposal terms on the evidence; set a competitive workshop"}, {"account_name": "Tohoku Services 205", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 82.8, "data_confidence_pct": 90.0, "governance_status": "Forecast-ready", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"}, {"account_name": "Tohoku Network 109", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 67.6, "data_confidence_pct": 89.0, "governance_status": "Forecast-ready", "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Discovery on AI workload, data throughput and GPU timing; select a PoC target / Validate Open Platform's proposal terms on the evidence; set a competitive workshop"}, {"account_name": "Hokkaido Holdings 150", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 37.3, "data_confidence_pct": 92.0, "governance_status": "Forecast-ready", "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Discovery on AI workload, data throughput and GPU timing; select a PoC target"}, {"account_name": "Kyushu Industries 051", "segment": "Public Sector", "recommended_play": "Renewal / Enterprise Plan", "priority_band": "High", "expected_value_jpy_mn": 249.8, "data_confidence_pct": 89.0, "governance_status": "Forecast-ready", "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Consolidate contracts and renewal months; compare current contracts vs an Enterprise Plan / multi-year scenario"}, {"account_name": "Setouchi Services 168", "segment": "Commercial", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 103.3, "data_confidence_pct": 86.0, "governance_status": "Forecast-ready", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"}, {"account_name": "Kansai Group 140", "segment": "Public Sector", "recommended_play": "Renewal / Enterprise Plan", "priority_band": "High", "expected_value_jpy_mn": 54.4, "data_confidence_pct": 86.0, "governance_status": "Forecast-ready", "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Consolidate contracts and renewal months; compare current contracts vs an Enterprise Plan / multi-year scenario"}, {"account_name": "Kansai Solutions 230", "segment": "Public Sector", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 55.8, "data_confidence_pct": 90.0, "governance_status": "Forecast-ready", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target"}, {"account_name": "Kansai Group 015", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 59.9, "data_confidence_pct": 91.0, "governance_status": "Forecast-ready", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"}, {"account_name": "Kansai Industries 115", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 67.4, "data_confidence_pct": 91.0, "governance_status": "Forecast-ready", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"}, {"account_name": "Hokkaido Services 129", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 37.8, "data_confidence_pct": 86.0, "governance_status": "Forecast-ready", "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"}, {"account_name": "Chubu Systems 101", "segment": "Public Sector", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 61.6, "data_confidence_pct": 88.0, "governance_status": "Forecast-ready", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target"}, {"account_name": "Kyushu Industries 249", "segment": "Commercial", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 36.8, "data_confidence_pct": 86.0, "governance_status": "Forecast-ready", "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"}, {"account_name": "Kanto Solutions 250", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 27.8, "data_confidence_pct": 87.0, "governance_status": "Forecast-ready", "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Discovery on AI workload, data throughput and GPU timing; select a PoC target / Validate Open Platform's proposal terms on the evidence; set a competitive workshop"}, {"account_name": "Hokkaido Solutions 146", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 49.2, "data_confidence_pct": 87.0, "governance_status": "Forecast-ready", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target"}, {"account_name": "Kanto Network 050", "segment": "Enterprise", "recommended_play": "Renewal / Enterprise Plan", "priority_band": "High", "expected_value_jpy_mn": 55.9, "data_confidence_pct": 89.0, "governance_status": "Forecast-ready", "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Consolidate contracts and renewal months; compare current contracts vs an Enterprise Plan / multi-year scenario"}, {"account_name": "Hokkaido Solutions 164", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 31.9, "data_confidence_pct": 81.0, "governance_status": "Evidence required", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"}, {"account_name": "Kanto Systems 198", "segment": "Public Sector", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 29.5, "data_confidence_pct": 89.0, "governance_status": "Forecast-ready", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"}, {"account_name": "Kyushu Solutions 066", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 62.0, "data_confidence_pct": 91.0, "governance_status": "Forecast-ready", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"}, {"account_name": "Hokkaido Systems 122", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 42.6, "data_confidence_pct": 86.0, "governance_status": "Forecast-ready", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target / Evaluate Platform Modernization as a parallel sales play"}, {"account_name": "Kansai Group 060", "segment": "Commercial", "recommended_play": "Renewal / Enterprise Plan", "priority_band": "High", "expected_value_jpy_mn": 110.3, "data_confidence_pct": 93.0, "governance_status": "Forecast-ready", "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Consolidate contracts and renewal months; compare current contracts vs an Enterprise Plan / multi-year scenario / Evaluate Platform Modernization as a parallel sales play"}, {"account_name": "Setouchi Holdings 081", "segment": "Public Sector", "recommended_play": "Renewal / Enterprise Plan", "priority_band": "High", "expected_value_jpy_mn": 81.2, "data_confidence_pct": 90.0, "governance_status": "Forecast-ready", "next_best_action": "Build Base/Downside/Upside for renewals within 180 days; set owner and date / Consolidate contracts and renewal months; compare current contracts vs an Enterprise Plan / multi-year scenario / Validate ShieldOps Cloud's proposal terms on the evidence; set a competitive workshop / Evaluate Platform Modernization as a parallel sales play"}, {"account_name": "Tohoku Network 208", "segment": "Enterprise", "recommended_play": "AI Data Platform", "priority_band": "High", "expected_value_jpy_mn": 103.7, "data_confidence_pct": 84.0, "governance_status": "Evidence required", "next_best_action": "Discovery on AI workload, data throughput and GPU timing; select a PoC target"}]};
+const yen = v => "¥" + Number(v).toLocaleString(undefined,{maximumFractionDigits:0}) + "M";
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+document.getElementById("asof").textContent = DATA.as_of_month;
+
+const k = DATA.kpis;
+const cards = [
+  ["ARR", yen(k.arr_jpy_mn), "synthetic", null],
+  ["Growth YoY", k.growth_yoy_pct.toFixed(0)+"%", "vs ~30% healthy", k.growth_yoy_pct>=30],
+  ["NRR (TTM)", k.nrr_ttm_pct.toFixed(0)+"%", "vs 110% best-in-class", k.nrr_ttm_pct>=110],
+  ["GRR (TTM)", k.grr_ttm_pct.toFixed(0)+"%", "vs 90% target", k.grr_ttm_pct>=90],
+  ["Rule of 40", k.rule_of_40_pct.toFixed(0), "vs 40 threshold", k.rule_of_40_pct>=40],
+  ["Magic Number", k.magic_number.toFixed(2), "vs 0.75 efficient", k.magic_number>=0.75],
+  ["CAC payback", k.cac_payback_months.toFixed(0)+" mo", "vs <18 mo", k.cac_payback_months<=18],
+  ["LTV / CAC", k.ltv_to_cac.toFixed(1)+"x", "vs 3x+ healthy", k.ltv_to_cac>=3],
+];
+document.getElementById("cards").innerHTML = cards.map(c => {
+  const cls = c[3]===null ? "" : (c[3] ? "ok" : "warn");
+  return `<div class="card"><div class="label">${c[0]}</div>
+    <div class="value">${c[1]}</div><div class="bench ${cls}">${c[2]}</div></div>`;
+}).join("");
+
+// Lightweight self-contained charts using the native Canvas API (no libraries,
+// works fully offline). Demonstrates the same delivery pattern a GAS web app uses.
+function setup(canvas) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth || 520, h = canvas.height;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+  return { ctx, w, h };
+}
+const PAD = { l: 44, r: 44, t: 14, b: 26 };
+function axes(ctx, w, h) {
+  ctx.strokeStyle = "#e4e7eb"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD.l, h - PAD.b); ctx.lineTo(w - PAD.r, h - PAD.b); ctx.stroke();
+}
+function drawArr(canvas, labels, bars, line) {
+  const { ctx, w, h } = setup(canvas); axes(ctx, w, h);
+  const ph = h - PAD.t - PAD.b, pw = w - PAD.l - PAD.r;
+  const bmax = Math.max(...bars) * 1.1;
+  const lmin = Math.min(...line), lmax = Math.max(...line);
+  const bw = pw / bars.length * 0.7;
+  ctx.fillStyle = "#2f6df6";
+  bars.forEach((v, i) => {
+    const x = PAD.l + pw * (i + 0.5) / bars.length - bw / 2;
+    const bh = ph * v / bmax;
+    ctx.fillRect(x, h - PAD.b - bh, bw, bh);
+  });
+  ctx.strokeStyle = "#0a7d4b"; ctx.lineWidth = 2; ctx.beginPath();
+  line.forEach((v, i) => {
+    const x = PAD.l + pw * (i + 0.5) / bars.length;
+    const y = h - PAD.b - ph * (v - lmin) / ((lmax - lmin) || 1);
+    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+  });
+  ctx.stroke();
+  ctx.fillStyle = "#7b8794"; ctx.font = "10px sans-serif"; ctx.textAlign = "center";
+  ctx.fillText(labels[0], PAD.l + 10, h - 8);
+  ctx.fillText(labels[labels.length - 1], w - PAD.r - 10, h - 8);
+}
+function drawLine(canvas, labels, series, floor) {
+  const { ctx, w, h } = setup(canvas); axes(ctx, w, h);
+  const ph = h - PAD.t - PAD.b, pw = w - PAD.l - PAD.r;
+  const lo = Math.min(floor, ...series), hi = Math.max(...series);
+  ctx.strokeStyle = "#9aa5b1"; ctx.setLineDash([3, 3]); ctx.beginPath();
+  const y100 = h - PAD.b - ph * (100 - lo) / ((hi - lo) || 1);
+  ctx.moveTo(PAD.l, y100); ctx.lineTo(w - PAD.r, y100); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle = "#2f6df6"; ctx.lineWidth = 2; ctx.beginPath();
+  series.forEach((v, i) => {
+    const x = PAD.l + pw * i / (series.length - 1);
+    const y = h - PAD.b - ph * (v - lo) / ((hi - lo) || 1);
+    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+  });
+  ctx.stroke();
+  ctx.fillStyle = "#7b8794"; ctx.font = "10px sans-serif"; ctx.textAlign = "left";
+  ctx.fillText("100%", w - PAD.r - 2, y100 - 4);
+}
+try {
+  drawArr(document.getElementById("arrChart"),
+    DATA.arr_series.months, DATA.arr_series.arr, DATA.arr_series.growth);
+  drawLine(document.getElementById("nrrChart"),
+    DATA.arr_series.months, DATA.arr_series.nrr, 95);
+} catch (e) { /* charts are progressive enhancement */ }
+
+const segBody = document.querySelector("#segTable tbody");
+segBody.innerHTML = DATA.segments.map(s => `<tr>
+  <td>${esc(s.segment)}</td><td>${yen(s.ending_arr_jpy_mn)}</td>
+  <td>${s.arr_growth_yoy_pct.toFixed(0)}%</td><td>${s.nrr_ttm_pct.toFixed(0)}%</td>
+  <td>${s.grr_ttm_pct.toFixed(0)}%</td><td>${s.magic_number.toFixed(2)}</td>
+  <td>${s.cac_payback_months.toFixed(0)} mo</td><td>${s.ltv_to_cac.toFixed(1)}x</td>
+  <td>${s.win_rate_pct.toFixed(0)}%</td></tr>`).join("");
+
+const acctBody = document.querySelector("#acctTable tbody");
+acctBody.innerHTML = DATA.priority_accounts.map(a => `<tr>
+  <td>${esc(a.account_name)}</td><td>${esc(a.segment)}</td>
+  <td><span class="pill">${esc(a.recommended_play)}</span></td>
+  <td>${yen(a.expected_value_jpy_mn)}</td><td>${a.data_confidence_pct}%</td>
+  <td>${esc(a.governance_status)}</td><td>${esc(a.next_best_action)}</td></tr>`).join("");
+</script>
+</body>
+</html>

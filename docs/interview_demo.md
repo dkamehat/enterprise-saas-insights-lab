@@ -1,46 +1,68 @@
 # Interview Demo Script
 
-## 3-minute flow
+A 4-minute walkthrough framed for a Strategy & Operations / BizOps conversation.
+Lead with the business question, show efficient growth, then the decision and how
+it reaches every team.
 
-### 1. Business question
+## 1. The business question (20s)
 
-「全Accountを同じ順序で追うのではなく、主力SaaSポートフォリオが価値を出せる条件、商業価値、競争圧力、データ信頼度を統合して営業工数を配分します。」
+> "Not every account deserves the same attention, and not every growth number is
+> equally healthy. I built one backbone that answers two questions from the same
+> data: *is our growth efficient?* and *where should the field spend the next hour?*"
 
-### 2. Portfolio
+## 2. GTM Economics — is growth efficient? (70s)
 
-Executive PortfolioでHigh priorityを表示し、Sales Play別Expected Valueを見る。
+Open **GTM Economics**.
 
-### 3. Account drill-down
+1. Headline KPIs vs benchmarks: ARR growth ~47% with **Rule of 40 = 58** → growth
+   is efficient, not bought.
+2. **NRR 114% / GRR 88%** → the installed base is the engine; retention drives ARR.
+3. **Magic Number 1.3, CAC payback ~18mo, LTV/CAC 5.4x** → marginal sales spend is
+   productive, so capacity — not demand — is the constraint.
+4. ARR bridge + Rule of 40 decomposition: show the path from negative to positive
+   operating margin while growth held.
 
-一つのAccountを開き、以下を順番に説明する。
+> "Every one of these is reconstructed from monthly drivers, not hard-coded — so
+> it's auditable and reproduces from the seed."
 
-1. 推奨Sales Playと競合
-2. Score driver
-3. Asset reconciliation
-4. Positioning angle
-5. Next Best Action
-6. TCOシナリオ
+## 3. From metric to account decision (60s)
 
-### 4. Governance
+Open **Executive Portfolio**, then **Account 360**.
 
-Data Confidenceが不足する場合は、金額が大きくてもCommitへ入れず、Upside / Riskへ分ける。
+1. Accounts ranked by expected value × win-fit × data trust — not alphabetically.
+2. Drill into one account: recommended play, score drivers, asset reconciliation,
+   competitive positioning, next best action, 3-year TCO.
+3. **Governance:** a large opportunity with low data confidence stays *Evidence
+   required* and out of Commit until reconciled — separate commercial
+   attractiveness from forecast confidence.
 
-## Recommended wording
+## 4. One backbone, many surfaces (60s)
 
-> I separate commercial attractiveness from forecast confidence. A large opportunity can still be high priority for evidence collection, while remaining ineligible for Commit until the asset and contract baseline is reconciled.
+Open `delivery/gas_webapp/dashboard.html` (and reference `docs/reference_architecture.md`).
 
-> The output is not a dashboard alone. It is an account-specific recommendation: what to sell, why the primary SaaS portfolio can win, which evidence supports the position, and what the AE should do next.
+> "The same governed marts feed Looker for execs, this Streamlit app for analysts,
+> a lightweight Apps Script/HTML app for operations teams a heavy BI tool never
+> reaches, and AppSheet for field sales. The metric is defined once in the
+> warehouse, so no two surfaces disagree. In production this is BigQuery; locally
+> it's DuckDB running the identical SQL — zero cost to demonstrate."
 
-## Trade-offs to explain
+## Wording to reuse
 
-### Rule-based baseline
+> I separate commercial attractiveness from forecast confidence. A large
+> opportunity can still be high priority for evidence collection while remaining
+> ineligible for Commit until the asset and contract baseline is reconciled.
 
-**Pros**: explainable, fast, auditable, works before labeled outcomes exist.  
-**Cons**: weights require governance and may miss non-linear patterns.
+> The output is not a dashboard. It's a decision: is growth efficient, what to
+> sell, why we win, which evidence supports it, and what the AE does next —
+> delivered to each audience in the form it actually uses.
 
-### ML challenger
+## Trade-offs to be ready for
 
-**Pros**: can improve ranking and calibration with sufficient outcome data.  
-**Cons**: leakage, drift, explainability, and bias controls are required.
+**Rule-based scoring** — explainable, fast, auditable, works before labeled
+outcomes exist; but weights need governance and can miss non-linear patterns. The
+recommended path is champion/challenger with an ML challenger, not an immediate
+replacement of business rules.
 
-The recommended architecture is champion/challenger, not immediate replacement of business rules.
+**Synthetic data** — lets the whole pipeline be public and reproducible with zero
+privacy risk; the modeling discipline (first-principle drivers, governance
+boundary, calibration) is what transfers to production.

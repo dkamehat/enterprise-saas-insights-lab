@@ -504,6 +504,36 @@ st.markdown(
 """
 )
 
+st.subheader("GTM Economics Formulas")
+st.markdown(
+    """
+Computed in `src/saas_insights/gtm.py` from the monthly driver panel.
+`base = ending_arr 12 months ago`. Retention, margin, and burn use a
+trailing-twelve-month (TTM) window; CAC and Magic Number use a trailing quarter;
+`gross_margin_pct` is the current-month ratio (point-in-time, not TTM). Every
+division is guarded so a zero denominator yields NaN rather than infinity.
+
+- `net_new_arr = new + expansion - contraction - churn`
+- `arr_growth_yoy_pct = (ending_arr / base - 1) * 100`
+- `nrr_ttm_pct = (base + expansion_ttm - contraction_ttm - churn_ttm) / base * 100`
+- `grr_ttm_pct = (base - contraction_ttm - churn_ttm) / base * 100`
+- `gross_margin_pct = (revenue - cogs) / revenue * 100`  (current month)
+- `rule_of_40_pct = arr_growth_yoy_pct + operating_margin_ttm_pct`
+- `magic_number = (ending_arr - ending_arr 3mo ago) / S&M spend in the prior quarter`
+- `cac = S&M (trailing 3mo) / new_customers (trailing 3mo)`
+- `cac_payback_months = cac / (new_arr_per_customer * gross_margin) * 12`
+- `ltv = new_arr_per_customer * gross_margin / gross_revenue_churn_rate`
+  where `gross_revenue_churn_rate = max(0.02, 1 - GRR)` — new-logo ARR paired with
+  new-logo CAC, using the company gross revenue churn as the retention assumption
+- `ltv_to_cac = ltv / cac`
+- `burn_multiple = net_cash_burn_ttm / net_new_arr_ttm`  (0 when FCF-positive)
+- `pipeline_coverage_x = open_pipeline_arr / quarter_target_arr`
+
+Benchmarks shown on the GTM page (Rule of 40 ≥ 40, Magic Number ≥ 0.75, NRR ≥ 110%,
+CAC payback < 18mo, LTV/CAC ≥ 3x) are common SaaS rules of thumb, not targets.
+"""
+)
+
 st.subheader("Calibration And Briefing")
 st.markdown(
     """

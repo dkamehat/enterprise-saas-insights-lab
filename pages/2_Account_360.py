@@ -17,10 +17,12 @@ from saas_insights.ui import database_ready, format_jpy_mn, read_df  # noqa: E40
 
 st.set_page_config(page_title="Account 360", page_icon="🎯", layout="wide")
 st.title("Account 360")
-st.caption("契約、利用率、競合、更新、データ品質を一つのAccountストーリーへ変換します。")
+st.caption(
+    "Turn contracts, utilization, competition, renewals, and data quality into one account story."
+)
 
 if not database_ready():
-    st.error("先にトップページでデモ環境を構築してください。")
+    st.error("Build the demo warehouse on the home page first.")
     st.stop()
 
 accounts = read_df(
@@ -34,8 +36,9 @@ account_id = labels[selected_label]
 row = read_df("SELECT * FROM account_positioning WHERE account_id = ?", [account_id]).iloc[0]
 
 st.info(
-    "この画面はAE/CSMが顧客会話の準備に使う想定です。"
-    "推奨Play、根拠となるDriver、未検証データ、競合ポジション、TCO仮説を一画面にまとめます。"
+    "Designed for an AE/CSM preparing a customer conversation: it brings the "
+    "recommended play, its drivers, unverified data, competitive position, "
+    "and the TCO hypothesis onto one screen."
 )
 
 m1, m2, m3, m4, m5 = st.columns(5)
@@ -45,20 +48,20 @@ m3.metric("Primary competitor", row["primary_competitor"])
 m4.metric("Expected value", format_jpy_mn(float(row["expected_commercial_value_jpy_mn"])))
 m5.metric("Data confidence", f"{row['data_confidence_pct']:.1f}%")
 
-st.subheader("AE向けData Story")
+st.subheader("Data story for the AE")
 st.success(row["data_story"])
 
 c1, c2 = st.columns(2)
 with c1:
     st.markdown("**Competitive positioning**")
-    st.caption("競合比較で何を論点にすべきかを短く示します。")
+    st.caption("A short take on what the competitive comparison should turn on.")
     st.write(row["positioning_angle"])
 with c2:
     st.markdown("**Next Best Action**")
-    st.caption("次回顧客接点までに実行すべき確認・提案準備です。")
+    st.caption("What to validate and prepare before the next customer touchpoint.")
     st.write(row["next_best_action"])
 
-with st.expander("スコア根拠・Forecast governance"):
+with st.expander("Score drivers & forecast governance"):
     drivers = json.loads(row["score_drivers_json"])
     driver_frame = {"Driver": list(drivers), "Contribution": list(drivers.values())}
     st.dataframe(driver_frame, use_container_width=True, hide_index=True)
@@ -68,7 +71,7 @@ with st.expander("スコア根拠・Forecast governance"):
 left, right = st.columns(2)
 with left:
     st.subheader("Asset reconciliation")
-    st.caption("Forecastの根拠に使えるSubscription inventoryかどうかを確認します。")
+    st.caption("Check whether the installed base is trustworthy enough to support a forecast.")
     reconciliation = read_df(
         """
         SELECT reconciliation_status, COUNT(*) AS assets,
@@ -86,7 +89,7 @@ with left:
     st.dataframe(reconciliation, use_container_width=True, hide_index=True)
 with right:
     st.subheader("Commercial profile")
-    st.caption("契約・利用・更新の状態を、提案余地とリスクの両面から見ます。")
+    st.caption("Read contract, usage, and renewal state through both the upside and the risk lens.")
     profile = {
         "Metric": [
             "Industry",
@@ -134,7 +137,10 @@ with right:
     st.dataframe(profile, use_container_width=True, hide_index=True)
 
 st.subheader("3-year TCO scenario")
-st.caption("競合が安く見える場合でも、移行、教育、二重運用、障害期待損失まで含めて比較します。")
+st.caption(
+    "Even when a competitor looks cheaper, compare including migration, training, "
+    "dual-running, and expected incident loss."
+)
 t1, t2 = st.columns([1, 1])
 competitor_discount = t1.slider(
     "Competitor product discount vs primary vendor baseline", 0, 40, 18, 1
@@ -148,7 +154,8 @@ total_primary = float(tco["primary_jpy_mn"].sum())
 total_competitor = float(tco["competitor_jpy_mn"].sum())
 st.metric("Competitor minus primary-vendor TCO", format_jpy_mn(total_competitor - total_primary))
 st.caption(
-    "係数はデモ用の仮定です。実案件では見積、移行WBS、運用工数、障害期待損失で差し替えます。"
+    "Coefficients are demo assumptions; in a real deal, replace them with the quote, "
+    "migration WBS, operating effort, and expected incident loss."
 )
 
 with st.expander("Contracts / competitor signals / opportunities"):
